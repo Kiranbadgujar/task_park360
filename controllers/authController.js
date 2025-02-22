@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const User = require("../models/User");
-const {sequelize ,QueryTypes} = require('sequelize')
+const {QueryTypes} = require('sequelize')
 
 // Express-validator
 const validation = (req, res) => {
@@ -19,8 +19,7 @@ const registerUser = async (req, res) => {
     return validationError;
   }
 
-  const { first_name, last_name, email, password, contact_number, address } =
-    req.body;
+  const { first_name, last_name, email, password, role } =  req.body;
 
   try {
     const existingUser = await User.findOne({ where: { email } });
@@ -30,19 +29,17 @@ const registerUser = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({
+    await User.create({
       first_name,
       last_name,
       email,
       password:hashedPassword,
-      contact_number,
-      address,
+      role,
     });
 
     return res.status(201).json({ status:201,message: "User registered successfully" });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ status:500,message: "Error registering user" });
+    return res.status(500).json({ status:500,message: "Error registering user",err });
   }
 };
 
@@ -79,31 +76,32 @@ const loginUser = async (req, res) => {
     return res.status(200).json({ status:200,message: "Login successful",token});
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ status:500,message: "Error logging in" });
+    return res.status(500).json({ status:500,message: "Error logging in",err });
   }
 };
 
 // Get All User
-
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.sequelize.query('SELECT * FROM users',{
+    const users = await User.sequelize.query('SELECT * FROM users WHERE is_active = "1"',{
       type: QueryTypes.SELECT,
     });
-    res.status(200).json({ status: 200, users });
+    const countuser = users.length;
+    res.status(200).json({ status: 200,countuser, users });
   } catch (error) {
     res.status(500).json({ status: 500, message: error.message });
   }
 };
 
-
 // Get User By ID
 const getUserById = async (req, res) => {
   const { userID } = req.params;
   try {
-    const user = await User.findByPk(userID);
-    if (!user) return res.status(404).json({ message: "User not found" });
-    res.status(200).json(user);
+    const user = await User.findOne({where: {id: userID,is_active: 1}});
+
+    if (!user) return res.status(404).json({ status:404,message: "User not found OR user is inactive" });
+
+    res.status(200).json({status:200,user});
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -117,7 +115,7 @@ const updateUser = async (req, res) => {
   }
 
   const { userID } = req.params;
-  const { first_name, last_name, email, contact_number, address } = req.body;
+  const { first_name, last_name, email,role ,is_active} = req.body;
 
   try {
     const user = await User.findByPk(userID);
@@ -126,19 +124,11 @@ const updateUser = async (req, res) => {
       return res.status(404).json({ status:404,message: "User not found" });
     }
  
-    if (email && email !== user.email) {
-      const existingUser = await User.findOne({ where: { email } });
-
-      if (existingUser) {
-        return res.status(400).json({ status:400,message: "Email already exists" });
-      }
-    }
-
     user.first_name = first_name || user.first_name;
     user.last_name = last_name || user.last_name;
     user.email = email || user.email;
-    user.contact_number = contact_number || user.contact_number;
-    user.address = address || user.address;
+    user.role = role || user.role;
+    user.is_active = is_active || user.is_active;
 
     await user.save();
 

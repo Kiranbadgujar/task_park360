@@ -1,7 +1,7 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db");
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/db');
 
-const User = sequelize.define("User", {
+const User = sequelize.define('User', {
   first_name: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -19,13 +19,14 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  contact_number: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
+  is_active: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
   },
-  address: {
+  role: {
     type: DataTypes.STRING,
-    allowNull: true,
+    allowNull: false,
   }
 });
 

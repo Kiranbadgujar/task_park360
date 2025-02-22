@@ -5,7 +5,7 @@ const sequelize = new Sequelize({
   host: 'localhost',
   username: 'root',
   password: '',
-  database: 'task_park360'
+  database: 'association'
 });
 
 const authenticateDatabase = async () => {
