@@ -12,7 +12,7 @@ const validation = (req, res) => {
   }
 };
 
-// Get comment for post only for author
+// Get like for post only for author
 const getLikeForPost = async (req, res) => {
   const postId = req.params.postId;
   const userId = req.user.user_id;
@@ -30,29 +30,22 @@ const getLikeForPost = async (req, res) => {
         .json({ message: "You are not the author of this post." });
     }
 
-    // Check role
-    // const user = await User.findByPk(userId);
-
-    // if (user.role !== 'author') {
-    //   return res.status(403).json({ message: "Only authors can see comments." });
-    // }
-
     // Fetch the comments for the post
     const like = await Like.findAll({
       where: { postId },
       attributes: ["like"],
       include: [
         {
-          model: Post,
-          as: "post",
-          attributes: ["title", "content"],
+          model: User,
+          as: "users",
+          attributes: ["First_name", "Last_name","createdAt"],
         },
       ],
     });
 
-    const countLike = like.length;
+    // const countLike = like.length;
 
-    res.json({ status: 200, countLike, like });
+    res.json({ status: 200, like });
   } catch (error) {
     console.error(error);
     res.status(500).send(error.message);

@@ -67,16 +67,12 @@ const getPosts = async (req, res) => {
         'id',
         'title', 
         'content',
+        'createdAt',
         [Sequelize.fn('CONCAT','http:/',Sequelize.col('image')),'image'],
         [Sequelize.fn('COUNT', Sequelize.col('likes.id')), 'likeCount'],
         [Sequelize.fn('COUNT', Sequelize.col('comments.id')), 'commentCount']
       ],
       include: [
-        {
-          model: User,
-          as: 'users',
-          attributes: ['first_name', 'last_name', 'email'],
-        },
         {
           model: Comment,
           as: 'comments',
@@ -97,6 +93,33 @@ const getPosts = async (req, res) => {
   }
 };
 
+// Get Post by id
+const getPostsById = async (req, res) => {
+  try {
+    const { postId } = req.params; 
+    const id = postId;
+    const post = await Post.findOne({
+      where: { id, is_active: true },
+      attributes: [
+        'id',
+        'title', 
+        'content',
+        'createdAt',
+        [Sequelize.fn('CONCAT','http:/',Sequelize.col('image')),'image'],
+      ],
+      group: ['Post.id'],
+    });
+
+    if (!post) {
+      return res.status(404).json({ status: 404, message: 'Post not found' });
+    }
+
+    res.status(200).json({ status: 200, post });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Get Posts by author
 const getPostsByAuthor = async (req, res) => {
   try {
@@ -111,7 +134,8 @@ const getPostsByAuthor = async (req, res) => {
         'id',
         'title', 
         'content', 
-        'image', 
+        'createdAt',
+        [Sequelize.fn('CONCAT','http:/',Sequelize.col('image')),'image'],
         [Sequelize.fn('COUNT', Sequelize.col('likes.id')), 'likeCount'],
         [Sequelize.fn('COUNT', Sequelize.col('comments.id')), 'commentCount']
       ],
@@ -124,7 +148,7 @@ const getPostsByAuthor = async (req, res) => {
         {
           model: Comment,
           as: 'comments',
-          attributes: ['comment'],
+          attributes: [],
         },
           {
             model: Like,
@@ -132,13 +156,14 @@ const getPostsByAuthor = async (req, res) => {
             attributes: [],
           }
     ],
+    group: ['Post.id'],
     });
 
     if (!posts.length) {
       return res.status(404).json({ message: "No posts found or posts is inactive." });
     }
 
-    res.status(200).json(posts); 
+    res.status(200).json({status:200,posts}); 
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -178,31 +203,45 @@ const updatePost = async (req, res) => {
 
 // delete post
 const deletePost = async (req, res) => {
-  try {
-    const { activate } = req.body;
-    // console.log(activate)
-    const postId = req.params.postId; 
+  const { postId } = req.params; 
+  const userId = req.user.user_id;
 
+  try {
+    // Retrieve the post from the database
     const post = await Post.findByPk(postId);
 
+    // Check if the post exists
     if (!post) {
-      return res.status(404).json({ status: 404, message: "Post not found." });
+      return res.status(404).json({
+        status: 404,
+        message: "Post not found.",
+      });
     }
 
-    if (post.userId !== req.user.user_id) {
-      return res.status(403).json({ status: 403, message: "You are not authorized to update this post." });
+    // Check if the user is the author of the post
+    if (post.userId !== userId) {
+      return res.status(403).json({
+        status: 403,
+        message: "You are not authorized to delete this post.",
+      });
     }
 
-    post.is_active = activate;
-    await post.save();
-    return res.status(200).json({ status: 200, message: "Post updated successfully" });
-    
+    // Delete the post from the database
+    await post.destroy();
+
+    // Return a success message after deletion
+    res.status(200).json({
+      status: 200,
+      message: "Post deleted successfully.",
+    });
 
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message,
+      message: "An error occurred while deleting the post.",
+    });
   }
-}
+};
 
 
-module.exports = {createPost , getPosts ,getPostsByAuthor, updatePost, deletePost}
+module.exports = {createPost , getPosts ,getPostsByAuthor, updatePost, deletePost ,getPostsById}

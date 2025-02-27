@@ -42,7 +42,7 @@ const getCommentsForPost = async (req, res) => {
       attributes:['comment'],
       include: [{
         model: Post,
-        as: 'post',
+        as: 'posts',
         attributes: ['title', 'content'],
       }],
     });
