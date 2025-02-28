@@ -95,9 +95,9 @@ const getAllUsers = async (req, res) => {
 
 // Get User By ID
 const getUserById = async (req, res) => {
-  const { userID } = req.params;
+  const userId = req.user.user_id;
   try {
-    const user = await User.findOne({where: {id: userID,is_active: 1}});
+    const user = await User.findOne({where: {id: userId,is_active: 1}});
 
     if (!user) return res.status(404).json({ status:404,message: "User not found OR user is inactive" });
 

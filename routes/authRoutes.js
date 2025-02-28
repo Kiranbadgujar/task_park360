@@ -7,7 +7,7 @@ const router = express.Router();
 router.post("/register", registrationValidator, registerUser);
 router.post("/login", loginValidator, loginUser);
 router.get("/user/",  getAllUsers);
-router.get('/user/:userID', getUserById);
+router.get('/userId/',middleware,getUserById);
 router.put('/update/:userID', middleware,registrationValidator,updateUser);
 router.delete('/delete/:userID',middleware,deleteUser);
 

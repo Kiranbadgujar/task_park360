@@ -1,6 +1,6 @@
 // routes/postRoutes.js
 const express = require('express');
-const {createPost,getPosts,getPostsByAuthor,updatePost,deletePost} = require('../controllers/postController');
+const {createPost,getPosts,getPostsByAuthor,updatePost,deletePost,getPostsById} = require('../controllers/postController');
 const middleware = require('../middlewares/authMiddleware')
 const { postValidator } = require("../helpers/validation");
 const multer = require("multer");
@@ -22,6 +22,7 @@ const upload = multer({ storage: storage });
 
 router.post('/create-post',middleware,upload.single("file"),postValidator ,createPost); 
 router.get('/get-post', getPosts); 
+router.get('/get-post/:postId', getPostsById); 
 router.get('/get-post-author',middleware, getPostsByAuthor); 
 router.put('/update-post/:postId',middleware, updatePost); 
 router.delete('/delete-post/:postId',middleware, deletePost); 

@@ -1,4 +1,4 @@
-const { body } = require("express-validator");
+const { body , check } = require("express-validator");
 
  const registrationValidator = [
   body("first_name").trim().notEmpty().withMessage("First name is required"),
@@ -16,6 +16,14 @@ const loginValidator = [
 const postValidator = [
   body("title").trim().isLength({ min: 5, max: 15 }).withMessage("Title must be between 5 and 15 characters"),
   body("content").trim().isLength({ min: 8 }).withMessage("Content must be at least 8 characters long"),
+//   check('image').custom( (value, {req}) => {
+//   if(req.file.mimetype === 'image/jpeg' || req.file.mimetype === 'image/png' || req.file.mimetype === 'image/mp4'){
+//       return true;
+//   }
+//   else{
+//       return false;
+//   }
+// } ).withMessage("Please upload an image Jpeg, PNG")
 ];
 
 const commentValidator = [
