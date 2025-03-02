@@ -20,7 +20,7 @@ const getLikeForPost = async (req, res) => {
   try {
     const post = await Post.findByPk(postId);
     if (!post) {
-      return res.status(404).json({ message: "Post not found." });
+      return res.status(404).json({ message: "Like Post not found." });
     }
 
     // Check if the logged-in user is the author of the post
