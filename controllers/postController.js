@@ -68,7 +68,7 @@ const getPosts = async (req, res) => {
         'title', 
         'content',
         'createdAt',
-        [Sequelize.fn('CONCAT','http:/',Sequelize.col('image')),'image'],
+        [Sequelize.fn('CONCAT','http://localhost:3000/',Sequelize.col('image')),'image'],
         [Sequelize.fn('COUNT', Sequelize.col('likes.id')), 'likeCount'],
         [Sequelize.fn('COUNT', Sequelize.col('comments.id')), 'commentCount']
       ],
@@ -140,11 +140,6 @@ const getPostsByAuthor = async (req, res) => {
         [Sequelize.fn('COUNT', Sequelize.col('comments.id')), 'commentCount']
       ],
       include: [
-        // {
-        //   model: User,
-        //   as: 'users',
-        //   attributes: ['first_name', 'last_name', 'email'],
-        // },
         {
           model: Comment,
           as: 'comments',

@@ -85,12 +85,7 @@ const createComment = async (req, res) => {
   //  check comment
   const checkcomment = await Comment.findOne({ where: { userId, postId } });
   if (checkcomment) {
-    return res
-      .status(403)
-      .json({
-        status: 403,
-        message: "You have already commented on this post.",
-      });
+    return res.status(403).json({status: 403,message: "You have already commented on this post."});
   }
 
   try {
@@ -105,12 +100,12 @@ const createComment = async (req, res) => {
 //Delete Comment
 const deleteCommentPost = async (req, res) => {
   const { postId } = req.params; // Get commentId from the URL params
-  console.log(postId);
+  // console.log(postId);
   
   // find post
   const postToDelete = await Comment.findOne({where:{postId}});
 
-  // console.log(postToDelete);
+  console.log(postToDelete);
 
   if (postToDelete) {
     // Extract commentid if post exists
