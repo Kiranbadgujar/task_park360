@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Posts</title>
+    <link
+      href="assets/vendor/fontawesome/css/fontawesome.min.css"
+      rel="stylesheet"
+    />
+    <link href="assets/vendor/fontawesome/css/solid.min.css" rel="stylesheet" />
+    <link
+      href="assets/vendor/fontawesome/css/brands.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="assets/vendor/bootstrap/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="assets/css/master.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <!-- sidebar navigation component -->
+      <nav id="sidebar" class="active">
+        <ul class="list-unstyled components text-secondary">
+          <li>
+            <a href="dashboard.html"><i class="fas fa-home"></i>Dashboard</a>
+          </li>
+          <li>
+            <a href="forms.html"><i class="fas fa-file-alt"></i>Posts</a>
+          </li>
+          <li>
+            <a href="tables.html"><i class="fas fa-table"></i>Tables</a>
+          </li>
+          <li>
+            <a href="charts.html"><i class="fas fa-chart-bar"></i>Charts</a>
+          </li>
+          <li>
+            <a href="icons.html"><i class="fas fa-icons"></i>Icons</a>
+          </li>
+        </ul>
+      </nav>
+      <!-- end of sidebar component -->
+      <div id="body" class="active">
+        <!-- navbar navigation component -->
+        <nav class="navbar navbar-expand-lg navbar-white bg-white">
+          <button type="button" id="sidebarCollapse" class="btn btn-light">
+            <i class="fas fa-bars"></i><span></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- <ul class="nav navbar-nav ms-auto">
+              <li class="nav-item dropdown">
+                <div class="nav-dropdown">
+                  <a
+                    href="#"
+                    id="nav2"
+                    class="nav-item nav-link dropdown-toggle text-secondary"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <i class="fas fa-user"></i> <span>John Doe</span>
+                    <i style="font-size: 0.8em" class="fas fa-caret-down"></i>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end nav-link-menu">
+                    <ul class="nav-list">
+                      <li>
+                        <a href="" class="dropdown-item"
+                          ><i class="fas fa-address-card"></i> Profile</a
+                        >
+                      </li>
+                      <li>
+                        <a href="" class="dropdown-item"
+                          ><i class="fas fa-envelope"></i> Messages</a
+                        >
+                      </li>
+                      <li>
+                        <a href="" class="dropdown-item"
+                          ><i class="fas fa-cog"></i> Settings</a
+                        >
+                      </li>
+                      <div class="dropdown-divider"></div>
+                      <li>
+                        <a href="" class="dropdown-item" id="logoutButton"
+                          ><i class="fas fa-sign-out-alt"></i> Logout</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </li>
+            </ul> -->
+          </div>
+        </nav>
+        <!-- end of navbar navigation -->
+        <div class="content">
+          <div class="container">
+            <div class="page-title">
+              <a href="addpost.html" class="btn btn-square btn-primary mb-2"
+                >Add Posts</a
+              >
+            </div>
+            <div class="row" id="postsContainer">
+              <!-- Posts will be dynamically inserted here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/script.js"></script>
+    <!-- FETCH POST -->
+    <script>
+      const fetchPosts = async () => {
+        const token = localStorage.getItem("Authortoken");
+        if (!token) {
+          // If no token found, redirect to login
+          window.location.href = "login.html";
+          return;
+        }
+
+        try {
+          const response = await fetch("/get-post-author", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const data = await response.json();
+          // console.log("fetch data",data);
+          // const postId = data.posts[1].id;
+          // console.log(postId);
+          if (data.status === 200 && data.posts.length > 0) {
+            const posts = data.posts;
+            const postsContainer = document.getElementById("postsContainer");
+
+            // Clear any existing content
+            postsContainer.innerHTML = "";
+
+            // Loop for each post
+            posts.forEach((post) => {
+              // console.log("foreach data",post);
+              const postElement = document.createElement("div");
+              postElement.classList.add("col-12", "col-lg-4");
+
+              const formattedDate = new Date(post.createdAt);
+              // Manually format as dd-mm-yyyy
+              const day = String(formattedDate.getDate()).padStart(2, "0");
+              const month = String(formattedDate.getMonth() + 1).padStart(
+                2,
+                "0"
+              );
+              const year = formattedDate.getFullYear();
+              const formattedDateString = `${day}-${month}-${year}`;
+
+              postElement.innerHTML = `
+                <article style="background-color: white;">
+                  <div class="card border-0 bg-transparent">
+                    <figure class="card-img-top mb-4 overflow-hidden bsb-overlay-hover">
+                      <a href="detailpost.html?postId=${post.id}">
+                        <img class="img-fluid bsb-scale bsb-hover-scale-up" loading="lazy" src="${post.image}">
+                      </a>
+                    </figure>
+                    <div class="card-body m-0 p-2">
+                      <div class="entry-header mb-3">
+                        <h2 class="card-title entry-title h4 m-0">
+                          <a class="link-dark text-decoration-none" href="#!">${post.title}</a>
+                        </h2>
+                      </div>
+                    </div>
+
+                    <div class="card-footer border-0 bg-transparent p-2 m-0">
+                      <ul class="entry-meta list-unstyled d-flex align-items-center m-0">
+                        <li>
+                          <a class="fs-7 link-secondary text-decoration-none d-flex align-items-center" href="">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-calendar3" viewBox="0 0 16 16">
+                              <path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z" />
+                              <path d="M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                            </svg>
+                            <span class="ms-2 fs-7 ">${formattedDateString}</span>
+                          </a>
+                        </li>
+
+                       <li>
+                          <a class="link-secondary text-decoration-none d-flex align-items-center px-2" href="${post.id}" id="showLikesModal" data-bs-toggle="modal" data-bs-target="#likeModal"  onclick="likeFunction(${post.id})">
+                           <img src="assets/img/icons8-like-50.png"  width="14" height="14" />
+                            <span class="ms-2 fs-7" id="likeCount">${post.likeCount} Likes</span>
+                          </a>
+                        </li>
+
+                        <div class="modal fade" id="likeModal" role="dialog" tabindex="-1">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title">Likes</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body text-start" id="likeList">
+                                
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+             
+                        <li>
+                          <a class="link-secondary text-decoration-none d-flex align-items-center px-2" href="${post.id}" id="showLikesModal" data-bs-toggle="modal" data-bs-target="#commentModal"  onclick="commentFunction(${post.id})">
+                          <img src="assets/img/comment-3-svgrepo-com.png"  width="14" height="14" />
+                          <span class="ms-2 fs-7">${post.commentCount} Comments</span>
+                          </a>
+                        </li>
+
+                          <div class="modal fade" id="commentModal" role="dialog" tabindex="-1">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title">Comments</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-start" id="commentsContainer">
+                                  <!-- Comments will be dynamically inserted here -->
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </article>
+              `;
+              postsContainer.appendChild(postElement);
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching posts:", error);
+        }
+      };
+
+      // Call the fetchPosts function when the page loads
+      window.onload = fetchPosts;
+    </script>
+    <!-- FETCH POST -->
+
+    <!-- Like Modal -->
+    <script>
+      async function likeFunction(postId) {
+        const token = localStorage.getItem("Authortoken");
+        try {
+          const response = await fetch(`/like/${postId}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          const likeList = document.getElementById("likeList");
+
+          // If there are likes
+          if (data.status === 200 && data.like && data.like.length > 0) {
+            likeList.innerHTML = ""; // Clear existing content
+
+            data.like.forEach((like, index) => {
+              const userName = `${like.users.First_name} ${like.users.Last_name}`;
+
+              // Formatting the date
+              const formattedDate = new Date(like.createdAt);
+              const day = String(formattedDate.getDate()).padStart(2, "0");
+              const month = String(formattedDate.getMonth() + 1).padStart(
+                2,
+                "0"
+              );
+              const year = formattedDate.getFullYear();
+              const formattedDateString = `${day}-${month}-${year}`;
+
+              const likeElement = document.createElement("div");
+              likeElement.classList.add("mb-3");
+              likeElement.innerHTML = `
+                <h3 style="display: inline;">${index + 1}.</h3>
+                <h3 style="display: inline; margin-left: 5px;">${userName}</h3>
+              `;
+              likeList.appendChild(likeElement);
+            });
+          } else {
+            // If no likes are available
+            likeList.innerHTML = "<p>No likes yet.</p>";
+          }
+        } catch (error) {
+          console.error("Error during fetching or processing: ", error);
+        }
+      }
+    </script>
+    <!-- Like Modal -->
+
+    <!-- COMMENT Modal -->
+    <script>
+      async function commentFunction(postId) {
+        const token = localStorage.getItem("Authortoken");
+        try {
+          const response = await fetch(`/comment/${postId}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          if (data.status === 200 && data.comments.length > 0) {
+            const commentsContainer =
+              document.getElementById("commentsContainer");
+            commentsContainer.innerHTML = ""; // Clear existing comments
+
+            data.comments.forEach((comment) => {
+              const commentElement = document.createElement("div");
+              commentElement.classList.add("mb-3");
+
+              commentElement.innerHTML = `
+          <div class="d-flex justify-content-between">
+            <h4>${comment.users.first_name} ${comment.users.last_name}</h4>
+          </div>
+          <p>${comment.comment}</p>
+           <div class="d-flex justify-content-end">
+            <a  class="btn btn-outline-danger btn-rounded" href="${postId}" onclick="deleteComment(${postId})">
+              <i class="fas fa-trash"></i>
+            </a>
+          </div>
+        `;
+              commentsContainer.appendChild(commentElement);
+            });
+          } else {
+            const commentsContainer =
+              document.getElementById("commentsContainer");
+            commentsContainer.innerHTML = "<p>No comments yet.</p>";
+          }
+        } catch (error) {
+          console.error("Error during fetching or processing: ", error);
+        }
+      }
+    </script>
+    <!-- COMMENT Modal -->
+
+    <!-- Handle Delete Comment -->
+    <script>
+      // Handle delete comment functionality
+      const deleteComment = async (postId) => {
+        event.preventDefault(); // Prevent the default link behavior
+        console.log(postId);
+        const token = localStorage.getItem("Authortoken");
+        try {
+          const response = await fetch(`/comment/${postId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            // body: JSON.stringify({ postId }),
+          });
+
+          const data = await response.json();
+
+          if (data.status === 200) {
+            alert("Comment deleted successfully");
+            window.location.href = "post.html";
+          } else {
+            alert("Failed to delete comment");
+          }
+        } catch (error) {
+          console.error("Error deleting comment:", error);
+          alert("Something went wrong. Try again.");
+        }
+      };
+    </script>
+
+    <!-- Logout -->
+    <script>
+      document.getElementById("logoutButton").addEventListener("click", () => {
+        localStorage.removeItem("Authortoken"); // Remove auth token
+      });
+    </script>
+    <!-- Logout -->
+  </body>
+</html>

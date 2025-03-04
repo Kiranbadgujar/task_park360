@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required Meta Tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Document Title, Description, and Author -->
+    <title>Blog Platform</title>
+    <meta
+      name="description"
+      content="Planet is a Free Bootstrap Blog Template."
+    />
+    <meta name="author" content="BootstrapBrain" />
+
+    <!-- Favicon and Touch Icons -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="./assets/favicon/favicon-512x512.png"
+    />
+
+    <!-- Google Fonts Files -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="./assets/css/planet-bsb.css" />
+
+    <!-- BSB Head -->
+  </head>
+
+  <body>
+    <!-- Header -->
+    <header
+      id="header"
+      class="sticky-top bsb-tpl-header-sticky bsb-tpl-header-sticky-animationX"
+    >
+      <!-- Navbar 1 - Bootstrap Brain Component -->
+      <nav
+        class="navbar navbar-expand-lg bsb-navbar bsb-navbar-hover bsb-navbar-caret bsb-tpl-navbar-sticky bg-white border-bottom border-light-subtle"
+        data-bsb-sticky-target="#header"
+      >
+        <div class="container">
+          <a class="navbar-brand" href="index.html">
+            <!-- <img src="./assets/img/branding/planet-logo.svg" class="bsb-tpl-logo" alt=""> -->
+            <h2>BlogPlatform</h2>
+          </a>
+          <button
+            class="navbar-toggler border-0"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasNavbar"
+            aria-controls="offcanvasNavbar"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="currentColor"
+              class="bi bi-list"
+              viewBox="0 0 16 16"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"
+              />
+            </svg>
+          </button>
+          <div
+            class="offcanvas offcanvas-end"
+            tabindex="-1"
+            id="offcanvasNavbar"
+            aria-labelledby="offcanvasNavbarLabel"
+          >
+            <div class="offcanvas-header">
+              <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="offcanvas-body">
+              <ul class="navbar-nav justify-content-end flex-grow-1">
+                <li class="nav-item">
+                  <a
+                    class="nav-link active"
+                    aria-current="page"
+                    href="index.html"
+                    >Home</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="about.html">About</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="contact.html">Contact</a>
+                </li>
+                <div
+                  class="collapse navbar-collapse"
+                  id="navbarSupportedContent"
+                >
+                  <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4"></ul>
+                  <form class="d-flex" id="navbarActions">
+                    <!-- Default register button -->
+                    <a class="nav-link" href="./login.html" id="registerButton"
+                      >Login</a
+                    >
+
+                    <!-- User dropdown (hidden by default) -->
+                    <div class="dropdown d-none" id="userDropdown">
+                      <div
+                        class="btn btn-outline-dark dropdown-toggle"
+                        type=""
+                        id="dropdownMenuButton"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      >
+                        <span id="userName"></span>
+                      </div>
+                      <ul
+                        class="dropdown-menu"
+                        aria-labelledby="dropdownMenuButton"
+                      >
+                        <li>
+                          <a class="dropdown-item" href="profile.html"
+                            >Profile</a
+                          >
+                        </li>
+                        <li>
+                          <button class="dropdown-item" id="logoutButton">
+                            Logout
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </form>
+                </div>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Featured 1 - Bootstrap Brain Component -->
+    <section class="py-3 py-md-5 py-xl-8 bg-light">
+      <div class="container">
+        <div class="row justify-content-md-center">
+          <div class="col-12">
+            <h2 class="h4 mb-4 mb-md-5">Featured</h2>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <article>
+          <div class="card border-light-subtle">
+            <div class="row g-0">
+              <div
+                class="col-12 col-md-6 order-1 order-md-0 d-flex align-items-center"
+              >
+                <div class="card-body p-md-4 p-xl-6 p-xxl-9">
+                  <div class="entry-header mb-3">
+                    <ul class="entry-meta list-unstyled d-flex mb-4">
+                      <li>
+                        <a
+                          class="d-inline-flex px-2 py-1 link-accent text-accent-emphasis bg-accent-subtle border border-accent-subtle rounded-2 text-decoration-none fs-7"
+                          href="#!"
+                          >Entrepreneurship</a
+                        >
+                      </li>
+                    </ul>
+                    <h2
+                      class="card-title entry-title display-3 fw-bold mb-4 lh-1"
+                    >
+                      <a class="link-dark text-decoration-none" href="#!"
+                        >How to Design and Produce Products from Scratch</a
+                      >
+                    </h2>
+                  </div>
+                  <p class="card-text entry-summary text-secondary mb-4">
+                    Creating a successful product from scratch is the stuff that
+                    entrepreneurial dreams are made of, but it's a journey
+                    that's equal parts challenging and thrilling.
+                  </p>
+                  <div class="entry-footer">
+                    <ul
+                      class="entry-meta list-unstyled d-flex align-items-center m-0"
+                    >
+                      <li>
+                        <a
+                          class="fs-7 link-secondary text-decoration-none d-flex align-items-center"
+                          href="#!"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            fill="currentColor"
+                            class="bi bi-calendar3"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z"
+                            />
+                            <path
+                              d="M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"
+                            />
+                          </svg>
+                          <span class="ms-2 fs-7">13 Apr 2028</span>
+                        </a>
+                      </li>
+                      <li>
+                        <span class="px-3">&bull;</span>
+                      </li>
+                      <li>
+                        <a
+                          class="link-secondary text-decoration-none d-flex align-items-center"
+                          href="#!"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            fill="currentColor"
+                            class="bi bi-chat-dots"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"
+                            />
+                            <path
+                              d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9.06 9.06 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.437 10.437 0 0 1-.524 2.318l-.003.011a10.722 10.722 0 0 1-.244.637c-.079.186.074.394.273.362a21.673 21.673 0 0 0 .693-.125zm.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6c0 3.193-3.004 6-7 6a8.06 8.06 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a10.97 10.97 0 0 0 .398-2z"
+                            />
+                          </svg>
+                          <span class="ms-2 fs-7">158</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6 d-flex">
+                <img
+                  class="img-fluid rounded-end object-fit-cover"
+                  loading="lazy"
+                  src="./assets/img/featured/featured-img-1.jpg"
+                  alt="Entrepreneurship"
+                />
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Main -->
+    <main id="main">
+      <!-- Blog 5 - Bootstrap Brain Component -->
+      <section class="bsb-blog-5 py-3 py-md-5 py-xl-8 bsb-section-py-xxl-1">
+        <div class="container">
+          <div class="row justify-content-md-center">
+            <div class="col-12">
+              <h2 class="h4 mb-4 mb-md-5">Latest</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="container overflow-hidden">
+          <div
+            class="row gy-4 gy-md-5 gx-xl-6 gy-xl-6 gx-xxl-9 gy-xxl-9"
+            id="postsContainer"
+          >
+            <!-- Posts will be populated here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Newsletter 1 - Bootstrap Brain Component -->
+      <section class="py-3 py-md-5 py-xl-10 bsb-section-py-xxl-1 bg-accent">
+        <div class="container">
+          <div class="row justify-content-md-center">
+            <div class="col-12 col-md-9 col-lg-8 col-xl-8 col-xxl-7">
+              <h2
+                class="display-4 fw-bold mb-4 mb-md-5 mb-xxl-6 text-center text-accent-emphasis"
+              >
+                Sign up for our newsletter and never miss a thing.
+              </h2>
+            </div>
+          </div>
+          <div class="row justify-content-md-center">
+            <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7">
+              <form class="row gy-3 gy-lg-0 gx-lg-2 justify-content-center">
+                <div class="col-12 col-lg-8">
+                  <label
+                    for="email-newsletter-component"
+                    class="visually-hidden"
+                    >Email Address</label
+                  >
+                  <input
+                    type="email"
+                    class="form-control bsb-form-control-3xl"
+                    id="email-newsletter-component"
+                    value=""
+                    placeholder="Email Address"
+                    aria-label="email-newsletter-component"
+                    aria-describedby="email-newsletter-help"
+                    required
+                  />
+                  <div
+                    id="email-newsletter-help"
+                    class="form-text text-center text-lg-start"
+                  >
+                    We'll never share your email with anyone else.
+                  </div>
+                </div>
+                <div class="col-12 col-lg-3 text-center text-lg-start">
+                  <button type="submit" class="btn btn-primary bsb-btn-3xl">
+                    Subscribe
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer 6 - Bootstrap Brain Component -->
+    <footer class="footer">
+      <!-- Widgets - Bootstrap Brain Component -->
+      <div class="bg-light py-3 py-md-5 py-xl-8 border-top border-light-subtle">
+        <div class="container overflow-hidden">
+          <div class="row gy-3 gy-md-5 gy-xl-0 align-items-sm-center">
+            <div class="col-xs-12 col-sm-6 col-xl-3 order-0 order-xl-0">
+              <div class="footer-logo-wrapper text-center text-sm-start">
+                <!-- <img src="./assets/img/branding/planet-logo.svg" alt="" class="bsb-tpl-logo-footer"> -->
+                <h3>BlogPlatform</h3>
+              </div>
+            </div>
+
+            <div class="col-xs-12 col-xl-6 order-2 order-xl-1">
+              <ul class="nav justify-content-center">
+                <li class="nav-item">
+                  <a class="nav-link link-secondary px-2 px-md-3" href="#!"
+                    >About</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link link-secondary px-2 px-md-3" href="#!"
+                    >Contact</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link link-secondary px-2 px-md-3" href="#!"
+                    >Advertise</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link link-secondary px-2 px-md-3" href="#!"
+                    >Terms</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link link-secondary px-2 px-md-3" href="#!"
+                    >Privacy</a
+                  >
+                </li>
+              </ul>
+            </div>
+
+            <div class="col-xs-12 col-sm-6 col-xl-3 order-1 order-xl-2">
+              <ul class="nav justify-content-center justify-content-sm-end">
+                <li class="nav-item">
+                  <a class="nav-link link-dark px-3" href="#!">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="currentColor"
+                      class="bi bi-facebook"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"
+                      />
+                    </svg>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link link-dark px-3" href="#!">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="currentColor"
+                      class="bi bi-youtube"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"
+                      />
+                    </svg>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link link-dark px-3" href="#!">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="currentColor"
+                      class="bi bi-twitter"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z"
+                      />
+                    </svg>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link link-dark px-3" href="#!">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      fill="currentColor"
+                      class="bi bi-linkedin"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"
+                      />
+                    </svg>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Copyright - Bootstrap Brain Component -->
+      <div class="bg-light py-3 py-md-5 border-top border-light-subtle">
+        <div class="container overflow-hidden">
+          <div class="row">
+            <div class="col">
+              <div class="footer-copyright-wrapper text-center">
+                &copy; 2023. All Rights Reserved.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Javascript Files: Vendors -->
+    <script src="https://unpkg.com/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    postId
+    <!-- Javascript Files: Controllers -->
+    <script src="./assets/controller/planet-bsb.js"></script>
+    <!-- BSB Body End -->
+
+    <!-- Fetch Posts Data -->
+    <script>
+      async function fetchPosts() {
+        try {
+          const response = await fetch("/get-post"); 
+          const data = await response.json();
+          // console.log("--------------------->",data)
+          if (data.status === 200) {
+            const postsContainer = document.getElementById("postsContainer");
+
+            data.posts.forEach((post) => {
+              const postElement = document.createElement("div");
+              postElement.classList.add("col-12", "col-lg-4");
+
+              postElement.innerHTML = `
+              <article>
+                <div class="card border-0 bg-transparent">
+                  <figure class="card-img-top mb-4">
+                    <a href="#!">
+                      <img class="img-fluid" loading="lazy" src="${post.image}">
+                    </a>
+                  </figure>
+                  <div class="card-body m-0 p-0">
+                    <div class="entry-header mb-3">
+                      <h2 class="card-title entry-title h4 m-0">
+                        <a class="link-dark text-decoration-none" href="#!">${
+                          post.title
+                        }</a>
+                      </h2>
+                    </div>
+                  </div>
+                  <div class="card-footer border-0 bg-transparent p-0 m-0">
+                    <ul class="entry-meta list-unstyled d-flex align-items-center m-0">
+                      <li>
+                        <a class="fs-7 link-secondary text-decoration-none d-flex align-items-center" href="#!">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" class="bi bi-calendar3" viewBox="0 0 16 16">
+                            <path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z" />
+                          </svg>
+                          <span class="ms-2 fs-7">${new Date(
+                            post.createdAt
+                          ).toLocaleDateString()}</span>
+                        </a>
+                      </li>
+                      <li>
+                        <a class="link-secondary text-decoration-none d-flex align-items-center px-2" href="${
+                          post.id
+                        }" data-bs-toggle="modal" data-bs-target="#likeModal" onclick="likeFunction(${
+                post.id
+              })">
+                          <img src="assets/img/icons8-like-50.png" width="14" height="14" />
+                          <span class="ms-2 fs-7" id="likeCount-${post.id}">${
+                post.likeCount
+              } Likes</span>
+                        </a>
+                      </li>
+                      <li style="margin-left:-10px">
+                        <a class="link-secondary text-decoration-non px-2" href="${post.id}" data-bs-toggle="modal"data-bs-target="#likeModal" onclick="unlikeFunction(${post.id})">
+                          <img src="assets/img/icons8-unlike-64.png" width="14" height="14" />
+                        </a>
+                      </li>
+                      <li>
+                        <a data-bs-toggle="modal" data-bs-target="#commentAddModal-${post.id}" class="link-secondary text-decoration-none d-flex align-items-center" href="${post.id}">
+                          <img src="assets/img/comment-3-svgrepo-com.png"  width="14" height="14" />
+                          <span class="ms-2 fs-7">${
+                            post.commentCount
+                          } Comment</span>
+                        </a>
+                      </li>
+                      <li>
+                          <a class="link-secondary text-decoration-none d-flex align-items-center px-2" id="showLikesModal" data-bs-toggle="modal" data-bs-target="#showCommentModal"  onclick="showCommentFunction(${post.id})">
+                          <img src="assets/img/view-svgrepo-com.png"  width="14" height="14" />
+                          <span class="ms-2 fs-7"></span>
+                          </a>
+                      </li>
+                     <div class="modal fade" id="commentAddModal-${post.id}" role="dialog" tabindex="-1">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title">Comment</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body text-start">
+                                <form id="commentForm-${post.id}" onsubmit="commentFunction(event, ${post.id})">
+                                  <div class="mb-3">
+                                    <label class="form-label">Comment</label>
+                                    <input type="text" id="comment-${post.id}" name="comment" placeholder="Comment" class="form-control" required>
+                                  </div>
+                                  <div class="mb-3">
+                                    <button type="submit" class="btn btn-primary">Comment</button>
+                                  </div>
+                                </form>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                      <div class="modal fade" id="showCommentModal" role="dialog" tabindex="-1">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title">Comments</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-start" id="commentsContainer">
+                                  <!-- Comments will be dynamically inserted here -->
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                    </ul>
+                  </div>
+                </div>
+              </article>
+            `;
+
+              // Append the post element to the container
+              postsContainer.appendChild(postElement);
+            });
+          } else {
+            console.error("Failed to fetch posts");
+          }
+        } catch (error) {
+          console.error("Error fetching posts:", error);
+        }
+      }
+
+      // Fetch Author Name
+      async function fetchAuthorName() {
+        const token = localStorage.getItem("usertoken");
+
+        try {
+          const response = await fetch("/userId", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const data = await response.json();
+          // console.log(data);
+
+          if (data.status === 200) {
+            const First_name = data.user.first_name;
+            const Last_name = data.user.last_name;
+            const fullName = First_name + " " + Last_name;
+            document.getElementById("userName").textContent = fullName;
+          } else {
+            console.error("Error fetching author name:", data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching author name:", error);
+        }
+      }
+
+      const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+      const registerButton = document.getElementById("registerButton");
+      const userDropdown = document.getElementById("userDropdown");
+
+      if (isLoggedIn) {
+        // Hide the register button and show the user dropdown
+        registerButton.classList.add("d-none");
+        userDropdown.classList.remove("d-none");
+
+        const userName = localStorage.getItem("userName");
+        // document.getElementById("dropdownMenuButton").textContent = `Hello`;
+      } else {
+        // If the user is not logged in, ensure Register button is visible
+        registerButton.classList.remove("d-none");
+        userDropdown.classList.add("d-none");
+      }
+
+      // Call the function to fetch posts when the page loads
+      // Run both functions when the page loads
+      window.addEventListener("load", () => {
+        fetchPosts();
+        fetchAuthorName();
+      });
+    </script>
+    <!-- Like and Unlike  -->
+    <script>
+      async function likeFunction(postId) {
+        const token = localStorage.getItem("usertoken");
+        if (!token) {
+          alert("Please login to like post");
+        }
+        try {
+          const response = await fetch("like", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ like: "1", postId: postId }),
+          });
+
+          const data = await response.json();
+
+          if (data.status === 201) {
+            const likeCountElement = document.getElementById(
+              `likeCount-${postId}`
+            );
+            const currentLikeCount = parseInt(
+              likeCountElement.textContent.split(" ")[0]
+            );
+            likeCountElement.textContent = `${currentLikeCount + 1} Likes`;
+          } else {
+            alert(data.message);
+          }
+        } catch (error) {
+          console.error("Error liking the post:", error);
+        }
+      }
+
+      async function unlikeFunction(postId) {
+        const token = localStorage.getItem("usertoken");
+        if (!token) {
+          alert("Please login to like post");
+        }
+        try {
+          const response = await fetch("/like", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ like: "0", postId: postId }),
+          });
+
+          const data = await response.json();
+
+          if (data.status === 200) {
+            const likeCountElement = document.getElementById(
+              `likeCount-${postId}`
+            );
+            const currentLikeCount = parseInt(
+              likeCountElement.textContent.split(" ")[0]
+            );
+            likeCountElement.textContent = `${currentLikeCount - 1} Likes`;
+          } else {
+            alert(data.message);
+          }
+        } catch (error) {
+          console.error("Error unliking the post:", error);
+        }
+      }
+    </script>
+    <!-- ADD Comment -->
+    <script>
+      async function commentFunction(event, postId) {
+        event.preventDefault(); 
+        const commentInput = document.getElementById(`comment-${postId}`);
+        const comment = commentInput.value.trim();
+        console.log(comment);
+
+        const token = localStorage.getItem("usertoken");
+        if (!token) {
+          alert("Please login to comment on the post.");
+          return;
+        }
+
+        try {
+          const response = await fetch("/comment", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ comment, postId }),
+          });
+
+          const data = await response.json();
+
+          if (response.status === 201) {
+            alert("Comment successfully posted.");
+            window.location.href = "index.html";
+          } else {
+            alert(
+              data.message || "An error occurred while posting your comment."
+            );
+          }
+        } catch (error) {
+          console.error("Error posting comment:", error);
+          alert("Something went wrong. Please try again later.");
+        }
+      }
+    </script>
+    <!-- Show COMMENT Modal -->
+    <script>
+      async function showCommentFunction(postId) {
+        try {
+          const response = await fetch(`/allComment/${postId}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          if (data.status === 200 && data.comments.length > 0) {
+            const commentsContainer =
+              document.getElementById("commentsContainer");
+            commentsContainer.innerHTML = ""; // Clear existing comments
+
+            data.comments.forEach((comment) => {
+              const commentElement = document.createElement("div");
+              commentElement.classList.add("mb-3");
+
+              commentElement.innerHTML = `
+          <div class="d-flex justify-content-between">
+            <h4>${comment.users.first_name} ${comment.users.last_name}</h4>
+          </div>
+          <p>${comment.comment}</p>
+           <div class="d-flex justify-content-end">
+          </div>
+        `;
+              commentsContainer.appendChild(commentElement);
+            });
+          } else {
+            const commentsContainer =
+              document.getElementById("commentsContainer");
+            commentsContainer.innerHTML = "<p>No comments yet.</p>";
+          }
+        } catch (error) {
+          console.error("Error during fetching or processing: ", error);
+        }
+      }
+    </script>
+    <!-- Logout -->
+    <script>
+      document.getElementById("logoutButton").addEventListener("click", () => {
+        localStorage.removeItem("usertoken"); // Remove auth token
+        localStorage.removeItem("loggedIn"); // Remove auth token
+      });
+    </script>
+  </body>
+</html>

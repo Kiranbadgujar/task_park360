@@ -59,6 +59,39 @@ const getCommentsForPost = async (req, res) => {
   }
 };
 
+// show all comment
+const getComments = async (req, res) => {
+  const postId = req.params.postId;
+
+  try {
+    // Get the post
+    const post = await Post.findByPk(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    // Fetch the comments for the post
+    const comments = await Comment.findAll({
+      where: { postId },
+      attributes: ["comment"],
+      include: [
+        {
+          model: User,
+          as: "users",
+          attributes: ["first_name", "last_name"],
+        },
+      ],
+    });
+
+    const countComment = comments.length;
+
+    res.json({ status: 200, countComment, comments });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error.message);
+  }
+};
+
 // Create a new comment
 const createComment = async (req, res) => {
   const validationError = validation(req, res);
@@ -68,7 +101,9 @@ const createComment = async (req, res) => {
 
   const { comment, postId } = req.body;
   const userId = req.user.user_id;
-
+  console.log(comment)
+  console.log(postId)
+  
   // Get user details
   const user = await User.findByPk(userId);
   if (!user) {
@@ -83,15 +118,15 @@ const createComment = async (req, res) => {
   }
 
   //  check comment
-  const checkcomment = await Comment.findOne({ where: { userId, postId } });
-  if (checkcomment) {
-    return res
-      .status(403)
-      .json({
-        status: 403,
-        message: "You have already commented on this post.",
-      });
-  }
+  // const checkcomment = await Comment.findOne({ where: { userId, postId } });
+  // if (checkcomment) {
+  //   return res
+  //     .status(403)
+  //     .json({
+  //       status: 403,
+  //       message: "You have already commented on this post.",
+  //     });
+  // }
 
   try {
     const content = await Comment.create({ comment, postId, userId });
@@ -140,4 +175,4 @@ const deleteCommentPost = async (req, res) => {
   }
 };
 
-module.exports = { createComment, getCommentsForPost, deleteCommentPost };
+module.exports = { createComment, getCommentsForPost, deleteCommentPost , getComments};
