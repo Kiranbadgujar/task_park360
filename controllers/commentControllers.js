@@ -73,12 +73,12 @@ const getComments = async (req, res) => {
     // Fetch the comments for the post
     const comments = await Comment.findAll({
       where: { postId },
-      attributes: ["comment"],
+      attributes: ["userid","comment"],
       include: [
         {
           model: User,
           as: "users",
-          attributes: ["first_name", "last_name"],
+          attributes: ["id","first_name", "last_name"],
         },
       ],
     });

@@ -28,6 +28,9 @@
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
                         </div>
+                        <div class="mb-3 text-start">
+                            <a href="forgetpassword.html">Forget your password </a>
+                        </div>
                         <button type="submit" class="btn btn-primary mb-4" style="width:100%">Login</button>
                     </form>
                     <p class="mb-0 text-muted">Don't have account yet? <a href="Register.html">Register</a></p> 
@@ -66,9 +69,7 @@
                     localStorage.setItem("loggedIn", "true");
                     window.location.href = "index.html"; 
                 } else {
-                    // Show error message
-                    document.getElementById('errorMessage').style.display = 'block';
-                    document.getElementById('errorMessage').textContent = data.message;
+                    alert(data.message);
                 }
             } catch (error) {
                 console.error('Error:', error);

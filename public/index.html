@@ -21,6 +21,16 @@
       href="./assets/favicon/favicon-512x512.png"
     />
 
+    <link
+      href="assets/vendor/fontawesome/css/fontawesome.min.css"
+      rel="stylesheet"
+    />
+    <link href="assets/vendor/fontawesome/css/solid.min.css" rel="stylesheet" />
+    <link
+      href="assets/vendor/fontawesome/css/brands.min.css"
+      rel="stylesheet"
+    />
+
     <!-- Google Fonts Files -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -130,9 +140,7 @@
                         aria-labelledby="dropdownMenuButton"
                       >
                         <li>
-                          <a class="dropdown-item" href="profile.html"
-                            >Profile</a
-                          >
+                          <a class="link-secondary text-decoration-none d-flex align-items-center px-2 dropdown-item" data-bs-toggle="modal" data-bs-target="#profileModal">Profile</a>
                         </li>
                         <li>
                           <button class="dropdown-item" id="logoutButton">
@@ -267,9 +275,20 @@
       <!-- Blog 5 - Bootstrap Brain Component -->
       <section class="bsb-blog-5 py-3 py-md-5 py-xl-8 bsb-section-py-xxl-1">
         <div class="container">
-          <div class="row justify-content-md-center">
-            <div class="col-12">
-              <h2 class="h4 mb-4 mb-md-5">Latest</h2>
+          <div
+            class="row justify-content-between align-items-center"
+            style="margin-bottom: 80px"
+          >
+            <div class="col-auto">
+              <h2 class="h4 mb-0">Latest</h2>
+            </div>
+            <div class="col-auto">
+              <input
+                type="text"
+                id="search-input"
+                class="form-control"
+                placeholder="Search"
+              />
             </div>
           </div>
         </div>
@@ -281,6 +300,16 @@
           >
             <!-- Posts will be populated here -->
           </div>
+        </div>
+
+        <!-- pagination -->
+        <div
+          id="pagination-controls"
+          class="d-flex justify-content-center mt-3"
+        >
+          <button id="prev-page" class="btn btn-primary" disabled>Prev</button>
+          <span id="page-number" class="mx-3"></span>
+          <button id="next-page" class="btn btn-primary">Next</button>
         </div>
       </section>
 
@@ -465,135 +494,30 @@
 
     <!-- Javascript Files: Vendors -->
     <script src="https://unpkg.com/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    postId
+
     <!-- Javascript Files: Controllers -->
     <script src="./assets/controller/planet-bsb.js"></script>
     <!-- BSB Body End -->
 
     <!-- Fetch Posts Data -->
     <script>
+      const postsPerPage = 6; 
+      let allPosts = []; 
+      let currentPage = 1; 
+      let filteredPosts = []; 
+
+      // Fetch posts
       async function fetchPosts() {
         try {
-          const response = await fetch("/get-post"); 
+          const response = await fetch("/get-post");
           const data = await response.json();
-          // console.log("--------------------->",data)
+          console.log(data);
+
           if (data.status === 200) {
-            const postsContainer = document.getElementById("postsContainer");
-
-            data.posts.forEach((post) => {
-              const postElement = document.createElement("div");
-              postElement.classList.add("col-12", "col-lg-4");
-
-              postElement.innerHTML = `
-              <article>
-                <div class="card border-0 bg-transparent">
-                  <figure class="card-img-top mb-4">
-                    <a href="#!">
-                      <img class="img-fluid" loading="lazy" src="${post.image}">
-                    </a>
-                  </figure>
-                  <div class="card-body m-0 p-0">
-                    <div class="entry-header mb-3">
-                      <h2 class="card-title entry-title h4 m-0">
-                        <a class="link-dark text-decoration-none" href="#!">${
-                          post.title
-                        }</a>
-                      </h2>
-                    </div>
-                  </div>
-                  <div class="card-footer border-0 bg-transparent p-0 m-0">
-                    <ul class="entry-meta list-unstyled d-flex align-items-center m-0">
-                      <li>
-                        <a class="fs-7 link-secondary text-decoration-none d-flex align-items-center" href="#!">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" class="bi bi-calendar3" viewBox="0 0 16 16">
-                            <path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z" />
-                          </svg>
-                          <span class="ms-2 fs-7">${new Date(
-                            post.createdAt
-                          ).toLocaleDateString()}</span>
-                        </a>
-                      </li>
-                      <li>
-                        <a class="link-secondary text-decoration-none d-flex align-items-center px-2" href="${
-                          post.id
-                        }" data-bs-toggle="modal" data-bs-target="#likeModal" onclick="likeFunction(${
-                post.id
-              })">
-                          <img src="assets/img/icons8-like-50.png" width="14" height="14" />
-                          <span class="ms-2 fs-7" id="likeCount-${post.id}">${
-                post.likeCount
-              } Likes</span>
-                        </a>
-                      </li>
-                      <li style="margin-left:-10px">
-                        <a class="link-secondary text-decoration-non px-2" href="${post.id}" data-bs-toggle="modal"data-bs-target="#likeModal" onclick="unlikeFunction(${post.id})">
-                          <img src="assets/img/icons8-unlike-64.png" width="14" height="14" />
-                        </a>
-                      </li>
-                      <li>
-                        <a data-bs-toggle="modal" data-bs-target="#commentAddModal-${post.id}" class="link-secondary text-decoration-none d-flex align-items-center" href="${post.id}">
-                          <img src="assets/img/comment-3-svgrepo-com.png"  width="14" height="14" />
-                          <span class="ms-2 fs-7">${
-                            post.commentCount
-                          } Comment</span>
-                        </a>
-                      </li>
-                      <li>
-                          <a class="link-secondary text-decoration-none d-flex align-items-center px-2" id="showLikesModal" data-bs-toggle="modal" data-bs-target="#showCommentModal"  onclick="showCommentFunction(${post.id})">
-                          <img src="assets/img/view-svgrepo-com.png"  width="14" height="14" />
-                          <span class="ms-2 fs-7"></span>
-                          </a>
-                      </li>
-                     <div class="modal fade" id="commentAddModal-${post.id}" role="dialog" tabindex="-1">
-                          <div class="modal-dialog">
-                            <div class="modal-content">
-                              <div class="modal-header">
-                                <h5 class="modal-title">Comment</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                              </div>
-                              <div class="modal-body text-start">
-                                <form id="commentForm-${post.id}" onsubmit="commentFunction(event, ${post.id})">
-                                  <div class="mb-3">
-                                    <label class="form-label">Comment</label>
-                                    <input type="text" id="comment-${post.id}" name="comment" placeholder="Comment" class="form-control" required>
-                                  </div>
-                                  <div class="mb-3">
-                                    <button type="submit" class="btn btn-primary">Comment</button>
-                                  </div>
-                                </form>
-                              </div>
-                              <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                      <div class="modal fade" id="showCommentModal" role="dialog" tabindex="-1">
-                            <div class="modal-dialog">
-                              <div class="modal-content">
-                                <div class="modal-header">
-                                  <h5 class="modal-title">Comments</h5>
-                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body text-start" id="commentsContainer">
-                                  <!-- Comments will be dynamically inserted here -->
-                                </div>
-                                <div class="modal-footer">
-                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                    </ul>
-                  </div>
-                </div>
-              </article>
-            `;
-
-              // Append the post element to the container
-              postsContainer.appendChild(postElement);
-            });
+            allPosts = data.posts; // Store the fetched posts
+            filteredPosts = allPosts; // Initially show all posts
+            renderPosts(); // Render posts initially
+            renderPagination(); // Render pagination initially
           } else {
             console.error("Failed to fetch posts");
           }
@@ -601,6 +525,296 @@
           console.error("Error fetching posts:", error);
         }
       }
+
+      // Render posts based on currentPage and filteredPosts
+      function renderPosts() {
+        const postsContainer = document.getElementById("postsContainer");
+        postsContainer.innerHTML = ""; // Clear the container
+
+        const startIndex = (currentPage - 1) * postsPerPage;
+        const endIndex = startIndex + postsPerPage;
+        const currentPosts = filteredPosts.slice(startIndex, endIndex);
+
+        currentPosts.forEach((post) => {
+          const postElement = document.createElement("div");
+          postElement.classList.add("col-12", "col-lg-4");
+
+          let mediaElement;
+          const fileExtension = post.image.split(".").pop();
+          console.log(fileExtension);
+
+          if (["jpg", "jpeg", "png"].includes(fileExtension)) {
+            mediaElement = `<img class="img-fluid" loading="lazy" src="${post.image}" />`;
+          } else {
+            mediaElement = `
+                <video class="img-fluid" loading="lazy" controls style="margin-top: 100px; margin-bottom:40px">
+                    <source src="${post.image}" type="video/${fileExtension}">
+                </video>
+            `;
+          }
+
+          postElement.innerHTML = `
+                <article>
+                  <div class="card border-0 bg-transparent">
+                    <figure class="card-img-top mb-4" data-bs-toggle="modal"  data-bs-target="#postModal-${
+                      post.id
+                    }" onclick=myfunction(${
+            post.id
+          }) style="padding-top: 70px;">
+                    <a>
+                      ${mediaElement}
+                    </a>
+                    </figure>
+                    <div class="card-body m-0 p-0">
+                      <div class="entry-header mb-3">
+                        <h2 class="card-title entry-title h4 m-0">
+                          <a class="link-dark text-decoration-none">${
+                            post.title
+                          }</a>
+                        </h2>
+                      </div>
+                    </div>
+                    <div class="card-footer border-0 bg-transparent p-0 m-0">
+                      <ul class="entry-meta list-unstyled d-flex align-items-center m-0">
+                        <li>
+                          <a class="fs-7 link-secondary text-decoration-none d-flex align-items-center" href="#!">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" class="bi bi-calendar3" viewBox="0 0 16 16">
+                              <path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z" />
+                            </svg>
+                            <span class="ms-2 fs-7">${new Date(
+                              post.createdAt
+                            ).toLocaleDateString()}</span>
+                          </a>
+                        </li>
+                        <li >
+                          <a class="link-secondary text-decoration-none d-flex align-items-center px-2" href="${
+                            post.id
+                          }" data-bs-toggle="modal" onclick="likeFunction(${
+            post.id
+          })">
+                            <img src="assets/img/icons8-like-50.png" width="14" height="14" />
+                            <span class="ms-2 fs-7" id="likeCount-${post.id}">${
+            post.likeCount
+          }</span>
+                          </a>
+                        </li>
+                        <li style="margin-left:-20px">
+                          <a class="link-secondary text-decoration-none d-flex align-items-center px-2" href="${
+                            post.id
+                          }" data-bs-toggle="modal" data-bs-target="#likeModal" onclick="showLikeFunction(${
+            post.id
+          })">
+                            <span class="ms-2 fs-7">Like</span>
+                          </a>
+                        </li>
+                        <li style="margin-left:-10px">
+                          <a class="link-secondary text-decoration-non px-2" href="${
+                            post.id
+                          }" data-bs-toggle="modal" onclick="unlikeFunction(${
+            post.id
+          })">
+                            <img src="assets/img/icons8-unlike-64.png" width="14" height="14" />
+                          </a>
+                        </li>
+                        <li>
+                          <a data-bs-toggle="modal" data-bs-target="#commentAddModal-${
+                            post.id
+                          }" class="link-secondary text-decoration-none d-flex align-items-center" href="${
+            post.id
+          }">
+                            <img src="assets/img/comment-3-svgrepo-com.png"  width="14" height="14" />
+                            <span class="ms-2 fs-7">${post.commentCount} </span>
+                          </a>
+                        </li>
+                        <li>
+                            <a class="link-secondary text-decoration-none d-flex align-items-center px-2" href="${
+                              post.id
+                            }" id="showLikesModal" data-bs-toggle="modal" data-bs-target="#showCommentModal"  onclick="showCommentFunction(${
+            post.id
+          })">
+                            <span class="ms-2 fs-7">Comment</span>
+                            </a>
+                        </li>
+
+                          <div class="modal fade" id="likeModal" role="dialog" tabindex="-1">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title">Likes</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-start" id="likeList">
+                                  
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                      <div class="modal fade" id="commentAddModal-${
+                        post.id
+                      }" role="dialog" tabindex="-1">
+                            <div class="modal-dialog">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title">Comment</h5>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-start">
+                                  <form id="commentForm-${
+                                    post.id
+                                  }" onsubmit="commentFunction(event, ${
+            post.id
+          })">
+                                    <div class="mb-3">
+                                      <label class="form-label">Comment</label>
+                                      <input type="text" id="comment-${
+                                        post.id
+                                      }" name="comment" placeholder="Comment" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                      <button type="submit" class="btn btn-primary">Comment</button>
+                                    </div>
+                                  </form>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                        <div class="modal fade" id="showCommentModal" role="dialog" tabindex="-1">
+                              <div class="modal-dialog">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title">Comments</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body text-start" id="commentsContainer">
+                                    <!-- Comments will be dynamically inserted here -->
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                             <div class="card modal fade" id="postModal-${
+                               post.id
+                             }" role="dialog" tabindex="-1">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title">Likes</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-start" >
+                              <figure class="card-img-top mb-4">
+                                <a href="${post.id}">
+                                  ${mediaElement}
+                                </a>
+                              </figure>
+                              <div class="card-body m-0 p-0">
+                                <div class="entry-header mb-3">
+                                  <h2 class="card-title entry-title h4 m-0">
+                                    <a class="link-dark text-decoration-none">${
+                                      post.title
+                                    }</a>
+                                  </h2>
+                                </div>
+                                <div class="entry-header mb-3">
+                                  <h2 class="card-title entry-title h4 m-0">
+                                    <a class="link-dark text-decoration-none">${
+                                      post.content
+                                    }</a>
+                                  </h2>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      </ul>
+                    </div>
+                  </div>
+                </article>
+              `;
+
+          postsContainer.appendChild(postElement);
+        });
+      }
+
+      // Render pagination based on the filtered posts
+      // Render pagination with 'Prev' and 'Next' buttons
+      function renderPagination() {
+        const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+
+        // Update page number display
+        const pageNumberSpan = document.getElementById("page-number");
+        pageNumberSpan.textContent = `Page ${currentPage}`;
+
+        // Enable/Disable 'Prev' and 'Next' buttons
+        const prevButton = document.getElementById("prev-page");
+        const nextButton = document.getElementById("next-page");
+
+        if (currentPage === 1) {
+          prevButton.disabled = true; // Disable 'Prev' on the first page
+        } else {
+          prevButton.disabled = false; // Enable 'Prev'
+        }
+
+        if (currentPage === totalPages || totalPages === 0) {
+          nextButton.disabled = true; // Disable 'Next' on the last page
+        } else {
+          nextButton.disabled = false; // Enable 'Next'
+        }
+      }
+
+      // Handle 'Prev' button click
+      document.getElementById("prev-page").addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderPosts(); // Render posts for the previous page
+          renderPagination(); // Update pagination display
+        }
+      });
+
+      // Handle 'Next' button click
+      document.getElementById("next-page").addEventListener("click", () => {
+        const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderPosts(); // Render posts for the next page
+          renderPagination(); // Update pagination display
+        }
+      });
+
+      // Go to a specific page
+      function goToPage(pageNumber) {
+        currentPage = pageNumber;
+        renderPosts(); // Render the posts for the new page
+      }
+
+      // Search posts based on the title
+      document
+        .getElementById("search-input")
+        .addEventListener("input", (event) => {
+          const search = event.target.value.toLowerCase();
+          console.log(search);
+          filteredPosts = allPosts.filter((post) =>
+            post.title.toLowerCase().includes(search)
+          );
+          currentPage = 1; // Reset to the first page when searching
+          renderPosts(); // Render the filtered posts
+          renderPagination(); // Render pagination for the filtered posts
+        });
 
       // Fetch Author Name
       async function fetchAuthorName() {
@@ -617,11 +831,19 @@
 
           const data = await response.json();
           // console.log(data);
+          getCommentId = data.user.id;
+          // console.log(getCommentId);
 
           if (data.status === 200) {
             const First_name = data.user.first_name;
             const Last_name = data.user.last_name;
+            const Email = data.user.email;
+            const Number = data.user.mobile_number;
             const fullName = First_name + " " + Last_name;
+            document.getElementById("first_name").textContent =  data.user.first_name ;
+            document.getElementById("last_name").textContent = data.user.last_name;
+            document.getElementById("email").textContent = data.user.email;
+            document.getElementById("number").textContent = Number;
             document.getElementById("userName").textContent = fullName;
           } else {
             console.error("Error fetching author name:", data.message);
@@ -636,20 +858,15 @@
       const userDropdown = document.getElementById("userDropdown");
 
       if (isLoggedIn) {
-        // Hide the register button and show the user dropdown
         registerButton.classList.add("d-none");
         userDropdown.classList.remove("d-none");
 
         const userName = localStorage.getItem("userName");
-        // document.getElementById("dropdownMenuButton").textContent = `Hello`;
       } else {
-        // If the user is not logged in, ensure Register button is visible
         registerButton.classList.remove("d-none");
         userDropdown.classList.add("d-none");
       }
 
-      // Call the function to fetch posts when the page loads
-      // Run both functions when the page loads
       window.addEventListener("load", () => {
         fetchPosts();
         fetchAuthorName();
@@ -681,7 +898,7 @@
             const currentLikeCount = parseInt(
               likeCountElement.textContent.split(" ")[0]
             );
-            likeCountElement.textContent = `${currentLikeCount + 1} Likes`;
+            likeCountElement.textContent = `${currentLikeCount + 1}`;
           } else {
             alert(data.message);
           }
@@ -714,7 +931,7 @@
             const currentLikeCount = parseInt(
               likeCountElement.textContent.split(" ")[0]
             );
-            likeCountElement.textContent = `${currentLikeCount - 1} Likes`;
+            likeCountElement.textContent = `${currentLikeCount - 1}`;
           } else {
             alert(data.message);
           }
@@ -726,7 +943,7 @@
     <!-- ADD Comment -->
     <script>
       async function commentFunction(event, postId) {
-        event.preventDefault(); 
+        event.preventDefault();
         const commentInput = document.getElementById(`comment-${postId}`);
         const comment = commentInput.value.trim();
         console.log(comment);
@@ -774,11 +991,10 @@
             },
           });
 
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
           const data = await response.json();
+
+          //  get id from getpost
+          const loggedInUserId = getCommentId;
 
           if (data.status === 200 && data.comments.length > 0) {
             const commentsContainer =
@@ -786,23 +1002,78 @@
             commentsContainer.innerHTML = ""; // Clear existing comments
 
             data.comments.forEach((comment) => {
+              // console.log(comment);
               const commentElement = document.createElement("div");
               commentElement.classList.add("mb-3");
 
+              // Check logged-in user is the same as the comment's author
+              // console.log(comment.userid);
+              const isLoggedInUserCommentOwner = comment.users.id === loggedInUserId;
+              // console.log(isLoggedInUserCommentOwner);
+
               commentElement.innerHTML = `
-          <div class="d-flex justify-content-between">
-            <h4>${comment.users.first_name} ${comment.users.last_name}</h4>
-          </div>
-          <p>${comment.comment}</p>
-           <div class="d-flex justify-content-end">
-          </div>
-        `;
+            <div class="d-flex justify-content-between">
+              <h4>${comment.users.first_name} ${comment.users.last_name}</h4>
+            </div>
+            <p>${comment.comment}</p>
+            <div class="d-flex justify-content-end">
+              ${
+                isLoggedInUserCommentOwner
+                  ? `<a class="btn btn-danger" href="${postId}" onclick="deleteComment(${postId}, ${comment.id})">
+                  <i class="fas fa-trash"></i>
+                </a>`
+                  : ""
+              }
+            </div>
+          `;
+
               commentsContainer.appendChild(commentElement);
             });
           } else {
             const commentsContainer =
               document.getElementById("commentsContainer");
             commentsContainer.innerHTML = "<p>No comments yet.</p>";
+          }
+        } catch (error) {
+          console.error("Error during fetching or processing: ", error);
+        }
+      }
+    </script>
+    <!-- Show LIKE Modal -->
+    <script>
+      async function showLikeFunction(postId) {
+        const token = localStorage.getItem("usertoken");
+        try {
+          const response = await fetch(`/likes/${postId}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const data = await response.json();
+
+          const likeList = document.getElementById("likeList");
+
+          // If there are likes
+          if (data.status === 200 && data.like && data.like.length > 0) {
+            likeList.innerHTML = ""; // Clear existing content
+
+            data.like.forEach((like, index) => {
+              const userName = `${like.users.First_name} ${like.users.Last_name}`;
+
+              const likeElement = document.createElement("div");
+              likeElement.classList.add("mb-3");
+              likeElement.innerHTML = `
+                  <h3 style="display: inline;">${index + 1}.</h3>
+                  <h3 style="display: inline; margin-left: 5px;">${userName}</h3>
+                `;
+              likeList.appendChild(likeElement);
+            });
+          } else {
+            // If no likes are available
+            likeList.innerHTML = "<p>No likes yet.</p>";
           }
         } catch (error) {
           console.error("Error during fetching or processing: ", error);
@@ -816,5 +1087,162 @@
         localStorage.removeItem("loggedIn"); // Remove auth token
       });
     </script>
+    <script>
+      function myfunction(id) {
+        console.log("=\==========>", id);
+      }
+    </script>
+    <!-- Handle Delete Comment -->
+    <script>
+      const deleteComment = async (postId) => {
+        event.preventDefault();
+        console.log(postId);
+        const token = localStorage.getItem("usertoken");
+        try {
+          const response = await fetch(`/comment/${postId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            // body: JSON.stringify({ postId }),
+          });
+
+          const data = await response.json();
+
+          if (data.status === 200) {
+            alert("Comment deleted successfully");
+            window.location.href = "index.html";
+          } else {
+            alert("Failed to delete comment");
+          }
+        } catch (error) {
+          console.error("Error deleting comment:", error);
+          alert("Something went wrong. Try again.");
+        }
+      };
+    </script>
+    <!-- update password -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Form handling for updating password
+        const profileForm = document.querySelector('#profileModal form');
+        
+        if (profileForm) {
+          profileForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+    
+            const currentPassword = document.getElementById('password').value;
+            const newPassword = document.getElementById('newPassword').value;
+          
+            try {
+              const response = await fetch(`/updatepassword/${getCommentId}`, {
+                method: 'PUT', 
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  currentPassword: currentPassword,
+                  password: newPassword,
+                }),
+              });
+    
+              const data = await response.json();
+    
+              if (response.ok) {
+                alert(data.message);
+                // Optionally, close the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
+                modal.hide();
+              } else {
+                alert(data.message);  
+              }
+            } catch (error) {
+              alert("An error occurred while updating the password.");
+            }
+          });
+        }
+      });
+    </script>
+    <div class="modal fade" id="profileModal" role="dialog" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-start" id="likeList">
+            <form>
+                <div class="mb-3 text-start row">
+                  <div class="col-6">
+                    <label for="first-name" class="form-label">First Name</label>
+                    <span
+                      type="text"
+                      class="form-control"
+                      id="first_name"
+                      required
+                    />
+                  </div>
+                  <div class="col-6">
+                    <label for="last-name" class="form-label">Last Name</label>
+                    <span
+                      type="text"
+                      class="form-control"
+                      id="last_name"
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="mb-3 text-start">
+                  <label for="email" class="form-label">Mobile Number</label>
+                  <span
+                    type="number"
+                    class="form-control"
+                    id="number"
+                    required
+                  />
+                </div>
+                <div class="mb-3 text-start">
+                  <label for="email" class="form-label">Email Address</label>
+                  <span
+                    type="email"
+                    class="form-control"
+                    id="email"
+                    required
+                  />
+                </div>
+                <div class="mb-3 text-start">
+                  <label for="password" class="form-label">Current Password</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="password"
+                    required
+                  />
+                </div>
+
+                <div class="mb-3 text-start">
+                  <label for="password" class="form-label">New Password</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="newPassword"
+                    required
+                  />
+                </div>
+                
+                <!-- Submit Button -->
+                <button
+                  type="submit"
+                  class="btn btn-primary mb-4"
+                  style="width: 100%"
+                >
+                 Update Password
+                </button>
+              </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

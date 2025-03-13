@@ -52,6 +52,38 @@ const getLikeForPost = async (req, res) => {
   }
 };
 
+// Get like for post only for user
+const getLike = async (req, res) => {
+  const postId = req.params.postId;
+
+  try {
+    const post = await Post.findByPk(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Like Post not found." });
+    }
+
+    // Fetch the comments for the post
+    const like = await Like.findAll({
+      where: { postId },
+      attributes: ["like"],
+      include: [
+        {
+          model: User,
+          as: "users",
+          attributes: ["First_name", "Last_name","createdAt"],
+        },
+      ],
+    });
+
+    // const countLike = like.length;
+
+    res.json({ status: 200, like });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error.message);
+  }
+};
+
 // Create a new like
 const createLike = async (req, res) => {
   const validationError = validation(req, res);
@@ -107,4 +139,4 @@ const createLike = async (req, res) => {
   } 
 };
 
-module.exports = { createLike, getLikeForPost ,};
+module.exports = { createLike, getLikeForPost , getLike};

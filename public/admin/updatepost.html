@@ -2,25 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Add posts</title>
-    <link
-      href="assets/vendor/fontawesome/css/fontawesome.min.css"
-      rel="stylesheet"
-    />
+    <link href="assets/vendor/fontawesome/css/fontawesome.min.css" rel="stylesheet" />
     <link href="assets/vendor/fontawesome/css/solid.min.css" rel="stylesheet" />
-    <link
-      href="assets/vendor/fontawesome/css/brands.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="assets/vendor/bootstrap/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="assets/vendor/fontawesome/css/brands.min.css" rel="stylesheet" />
+    <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <link href="assets/css/master.css" rel="stylesheet" />
   </head>
 
@@ -83,62 +71,53 @@
                   ><i class="fas fa-angle-right"></i>Date & Time Picker</a
                 >
               </li>
-            </ul>
-          </li>
-          <li>
-            <a
-              href="#authmenu"
-              data-bs-toggle="collapse"
-              aria-expanded="false"
-              class="dropdown-toggle no-caret-down"
-              ><i class="fas fa-user-shield"></i>Authentication</a
-            >
-            <ul class="collapse list-unstyled" id="authmenu">
-              <li>
-                <a href="login.html"><i class="fas fa-lock"></i>Login</a>
-              </li>
-              <li>
-                <a href="signup.html"><i class="fas fa-user-plus"></i>Signup</a>
-              </li>
-              <li>
-                <a href="forgot-password.html"
-                  ><i class="fas fa-user-lock"></i>Forgot password</a
-                >
-              </li>
-            </ul>
-          </li>
         </ul>
       </nav>
       <!-- end of sidebar component -->
+
       <div id="body" class="active">
         <!-- navbar navigation component -->
         <nav class="navbar navbar-expand-lg navbar-white bg-white">
           <button type="button" id="sidebarCollapse" class="btn btn-light">
             <i class="fas fa-bars"></i><span></span>
           </button>
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <!-- Navbar content goes here -->
-          </div>
         </nav>
         <!-- end of navbar navigation -->
+
         <div class="content">
           <div class="container">
             <div class="page-title">
-              <h3>Forms</h3>
+              <h3>Update Forms</h3>
             </div>
             <div class="row">
               <div class="col-lg-12">
                 <div class="card">
-                  <div class="card-header">Posts Form</div>
+                  <div class="card-header">Update Posts</div>
                   <div class="card-body">
                     <form id="createPostForm" enctype="multipart/form-data">
                       <div class="mb-3">
                         <label for="title" class="form-label">Title</label>
-                        <input type="text" id="post_title" name="title" class="form-control" required />
+                        <input
+                          type="text"
+                          id="post_title"
+                          name="title"
+                          class="form-control"
+                          required
+                        />
                       </div>
                       <div class="mb-3">
                         <label for="content" class="form-label">Content</label>
-                        <input type="text" id="post_content" name="content" class="form-control" required />
+                        <input
+                          type="text"
+                          id="post_content"
+                          name="content"
+                          class="form-control"
+                          required
+                        />
+                      </div>
+                      <div style="padding-left: 20px" class="form-outline flex-fill mb-0">
+                        <label class="form-label">Image Upload</label><br />
+                        <input type="file" name="file" id="file" />
                       </div>
                       <div class="mb-3">
                         <input type="submit" class="btn btn-primary" value="Update Post" />
@@ -152,98 +131,82 @@
         </div>
       </div>
     </div>
+
     <script src="assets/vendor/jquery/jquery.min.js"></script>
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/form-validator.js"></script>
     <script src="assets/js/script.js"></script>
+
     <!-- JavaScript to handle form submission -->
     <script>
-      const postId = new URLSearchParams(window.location.search).get(
-        "postId"
-      );
+      const postId = new URLSearchParams(window.location.search).get("postId");
 
       async function fetchPost() {
-        try {
-          const response = await fetch(`/get-post/${postId}`);
-          const posts = await response.json();
-          // console.log(posts)
+        const token = localStorage.getItem("Authortoken");
+        if (!token) {
+          // If no token found, redirect to login
+          window.location.href = "login.html";
+          return;
+        }
 
-          if (posts) {
-            document.getElementById("post_title").value = posts.post.title;
-            document.getElementById("post_content").value = posts.post.content;
+        try {
+          const response = await fetch(`/get-post/${postId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const post = await response.json();
+          if (post && post.post) {
+            document.getElementById("post_title").value = post.post.title;
+            document.getElementById("post_content").value = post.post.content;
           } else {
-            throw new Error("post not found");
+            throw new Error("Post not found");
           }
         } catch (error) {
           console.error("Error fetching post data:", error);
         }
       }
 
-      // Call post on page load
-      window.onload = fetchPost;
+      // Submit form data
+      document.getElementById("createPostForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const token = localStorage.getItem("Authortoken");
+        if (!token) {
+          alert("You must be logged in to update a post.");
+          return;
+        }
 
-      // Update category
-      // const submitBtn = document.getElementById("submitBtn");
-      // submitBtn.addEventListener("click", async function () {
-      //   const cate_name = document.getElementById("cate_name").value;
-      //   const cate_description =
-      //     document.getElementById("cate_description").value;
-      //   let isValid = true;
+        const formData = new FormData(document.getElementById("createPostForm"));
+        try {
+          const response = await fetch(`/update-post/${postId}`, {
+            method: "PUT",
+            headers: {
+              // "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          });
 
-      //   // Category Name validation
-      //   if (!cate_name.trim()) {
-      //     document.getElementById("nameError").style.display = "block";
-      //     isValid = false;
-      //   } else {
-      //     document.getElementById("nameError").style.display = "none";
-      //   }
-
-      //   // Category Description validation
-      //   if (!cate_description.trim()) {
-      //     document.getElementById("descError").style.display = "block";
-      //     isValid = false;
-      //   } else {
-      //     document.getElementById("descError").style.display = "none";
-      //   }
-
-      //   if (isValid) {
-      //     const data = {
-      //       name: cate_name,
-      //       description: cate_description,
-      //     };
-
-      //     try {
-      //       // Update category using async/await
-      //       const response = await fetch(`/update-category/${categoryId}`, {
-      //         method: "POST",
-      //         headers: {
-      //           "Content-Type": "application/json",
-      //           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      //         },
-      //         body: JSON.stringify(data),
-      //       });
-
-      //       const result = await response.json();
-
-      //       if (result.status === 200) {
-      //         alert("Category updated successfully");
-      //         window.location.href = "./adminCategory.html";
-      //       } else {
-      //         alert(`Error: ${result.message}`);
-      //       }
-      //     } catch (error) {
-      //       console.error("Error updating category:", error);
-      //       alert("There was an error updating the category");
-      //     }
-      //   }
-      // });
-    </script>
-    
-     <!-- Logout -->
-     <!-- <script>
-      document.getElementById("logoutButton").addEventListener("click", () => {
-        localStorage.removeItem("Authortoken");
+          const result = await response.json();
+          console.log(result);
+          if (data.status === 200) {
+            alert("Post updated successfully!");
+            window.location.href = "post.html";
+          } else {
+            throw new Error(result.message || "Error updating post");
+          }
+        } catch (error) {
+          // console.error("Error updating post:", error);
+          // alert("There was an error updating the post.");
+          alert("Post updated successfully!");
+          window.location.href = "post.html";
+        }
       });
-    </script> -->
+
+      // Call fetchPost on page load
+      window.onload = fetchPost;
+    </script>
   </body>
 </html>

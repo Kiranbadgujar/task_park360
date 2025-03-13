@@ -19,6 +19,10 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  mobile_number: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   is_active: {
     type: DataTypes.BOOLEAN,
     allowNull: false,

@@ -41,6 +41,16 @@
                 </div>
               </div>
               <div class="mb-3 text-start">
+                <label for="email" class="form-label">Mobile Number</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="mobile"
+                  placeholder="Enter your mobile number"
+                  required
+                />
+              </div>
+              <div class="mb-3 text-start">
                 <label for="email" class="form-label">Email Address</label>
                 <input
                   type="email"
@@ -111,7 +121,8 @@
         const lastName = document.getElementById("last-name").value;
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
-        const role = document.querySelector('input[name="role"]:checked')?.value; // Get selected role
+        const mobile = document.getElementById("mobile").value;
+        const role = document.querySelector('input[name="role"]:checked')?.value; 
 
         // Ensure a role is selected
         if (!role) {
@@ -123,8 +134,9 @@
           first_name: firstName,
           last_name: lastName,
           email: email,
+          mobile_number: mobile,
           password: password,
-          role: role, // Add selected role to the data
+          role: role, 
         };
 
         try {
@@ -137,10 +149,12 @@
           });
 
           const result = await response.json();
+          // console.log(result)
 
           if (response.status === 201) {
+            localStorage.setItem("activationToken",result.activationToken);
             alert(result.message); // Success message
-            window.location.href = "login.html"; 
+            window.location.href = "verify.html"; 
           } else {
             alert(result.message); // Error message
           }

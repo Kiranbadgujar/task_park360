@@ -93,6 +93,55 @@ const getPosts = async (req, res) => {
   }
 };
 
+// get post by pagination and search
+const getPostsByPagination = async (req, res) => {
+  try {
+    const searchTerm = req.query.search;
+
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+
+    const offset = (page - 1) * limit;
+
+    const searchCondition = {
+      is_active: true,
+      [Sequelize.Op.or]:[{title:{[Sequelize.Op.like]:`%${searchTerm}%`}},{content:{[Sequelize.Op.like]:`%${searchTerm}%`}}],
+    };
+
+    const totalPosts = await Post.count({
+      where: searchCondition,
+    });
+
+    const posts = await Post.findAll({
+      where: searchCondition,
+      attributes: [
+        'id',
+        'title',
+        'content',
+        'createdAt',
+        [
+          Sequelize.fn('CONCAT', 'http://localhost:3000/', Sequelize.col('image')),
+          'image',
+        ],
+      ],
+      limit: limit,
+      offset: offset,
+    });
+
+    res.status(200).json({
+      status: 200,
+      posts,
+      pagination: {
+        page,
+        limit,
+        totalPosts,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Get Post by id
 const getPostsById = async (req, res) => {
   try {
@@ -164,35 +213,32 @@ const getPostsByAuthor = async (req, res) => {
   }
 };
 
-// update post
 const updatePost = async (req, res) => {
   try {
     const { title, content } = req.body;
-    const postId = req.params.postId; 
-    const userId = req.user.user_id; 
-
-    if (!userId) {
-      return res.status(403).json({ message: "You must be logged in to see comment on post." });
-    }
+    const postId = req.params.postId;
+    const imagePath = req.file ? req.file.path : null; // Handle image file
 
     const post = await Post.findByPk(postId);
 
     if (!post) {
-      return res.status(404).json({ status:404,message: "Post not found." });
+      return res.status(404).json({ message: "Post not found." });
     }
 
     if (post.userId !== req.user.user_id) {
-      return res.status(403).json({ status:403,message: "You are not authorized to update this post." });
+      return res.status(403).json({ message: "You are not authorized to update this post." });
     }
 
     if (title) post.title = title;
     if (content) post.content = content;
+    if (imagePath) post.image = imagePath;
 
     await post.save();
 
-    res.status(200).json(post);
+    res.status(200).json({ status: 200, message: 'Post updated successfully' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Error updating post." });
   }
 };
 
@@ -239,4 +285,4 @@ const deletePost = async (req, res) => {
 };
 
 
-module.exports = {createPost , getPosts ,getPostsByAuthor, updatePost, deletePost ,getPostsById}
+module.exports = {createPost , getPosts ,getPostsByAuthor, updatePost, deletePost ,getPostsById ,getPostsByPagination}
