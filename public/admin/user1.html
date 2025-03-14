@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Users</title>
+    <link
+      href="assets/vendor/fontawesome/css/fontawesome.min.css"
+      rel="stylesheet"
+    />
+    <link href="assets/vendor/fontawesome/css/solid.min.css" rel="stylesheet" />
+    <link
+      href="assets/vendor/fontawesome/css/brands.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="assets/vendor/bootstrap/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="assets/vendor/datatables/datatables.min.css" rel="stylesheet" />
+    <link href="assets/css/master.css" rel="stylesheet" />
+
+    <!-- jsPDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <!-- sidebar navigation component -->
+      <nav id="sidebar" class="active">
+        <ul class="list-unstyled components text-secondary">
+          <li>
+            <a href="dashboard.html"><i class="fas fa-home"></i>Dashboard</a>
+          </li>
+          <li>
+            <a href="post.html"><i class="fas fa-file-alt"></i>Posts</a>
+          </li>
+          <li>
+            <a href="tables.html"><i class="fas fa-table"></i>Users</a>
+          </li>
+        </ul>
+      </nav>
+      <!-- end of sidebar component -->
+      <div id="body" class="active">
+        <!-- navbar navigation component -->
+        <nav class="navbar navbar-expand-lg navbar-white bg-white">
+          <button type="button" id="sidebarCollapse" class="btn btn-light">
+            <i class="fas fa-bars"></i><span></span>
+          </button>
+        </nav>
+        <!-- end of navbar navigation -->
+        <div class="content">
+          <div class="container">
+            <div class="page-title">
+              <h3>
+                Users
+                <a
+                  href="javascript:void(0);"
+                  class="btn btn-sm btn-outline-primary float-end"
+                  id="download-pdf"
+                  ><i class="fa-solid fa-circle-down"></i>Download PDF</a
+                >
+              </h3>
+            </div>
+
+            <div class="box box-primary">
+              <div class="box-body">
+                <table width="100%" class="table table-hover">
+                  <div class="d-flex align-items-center">
+                    <select
+                      class="form-select"
+                      aria-label="Default select example"
+                      style="width: auto"
+                      id="users-per-page-select"
+                    >
+                      <option selected>Select User To Show</option>
+                      <option value="5">5</option>
+                      <option value="10">10</option>
+                      <option value="15">15</option>
+                    </select>
+                    <div class="mb-3 ms-3" style="padding-left: 650px">
+                      <input
+                        type="text"
+                        id="search-input"
+                        class="form-control"
+                        placeholder="Search"
+                      />
+                    </div>
+                  </div>
+                  <thead>
+                    <tr>
+                      <th>Sr.no</th>
+                      <th>First Name</th>
+                      <th>Last Name</th>
+                      <th>Email</th>
+                      <th>Number</th>
+                      <th>Role</th>
+                    </tr>
+                  </thead>
+                  <tbody id="userstablebody">
+                    <!-- User data will be populated here -->
+                  </tbody>
+                </table>
+
+                <!-- Pagination Controls -->
+                <div
+                  id="pagination-controls"
+                  class="d-flex justify-content-center mt-3"
+                >
+                  <button id="prev-page" class="btn btn-primary" disabled>
+                    Prev
+                  </button>
+                  <span id="page-number" class="mx-3"></span>
+                  <button id="next-page" class="btn btn-primary">Next</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/datatables/datatables.min.js"></script>
+    <script src="assets/js/initiate-datatables.js"></script>
+    <script src="assets/js/script.js"></script>
+
+    <script>
+      let currentPage = 1;
+      let usersPerPage = 5;
+      let allUsers = [];
+      let filteredUsers = [];
+
+      // Fetch users from the server
+      const getUsers = async () => {
+        const token = localStorage.getItem("Authortoken");
+        if (!token) {
+          // If no token found, redirect to login
+          window.location.href = "login.html";
+          return;
+        }
+        try {
+          const response = await fetch("/user");
+          const data = await response.json();
+
+          if (data.status === 200) {
+            allUsers = data.users;
+            filteredUsers = allUsers;
+            renderTable(); // Render the table once data is fetched
+          } else {
+            console.error("Failed to load users:", data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching users:", error);
+        }
+      };
+
+      // Render the users for the current page
+      const renderTable = () => {
+        const tableBody = document.getElementById("userstablebody");
+        tableBody.innerHTML = "";
+
+        const startIndex = (currentPage - 1) * usersPerPage;
+        const endIndex = startIndex + usersPerPage;
+        const usersToDisplay = filteredUsers.slice(startIndex, endIndex);
+
+        usersToDisplay.forEach((user, index) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${user.first_name}</td>
+                            <td>${user.last_name}</td>
+                            <td>${user.email}</td>
+                            <td>${user.mobile_number}</td>
+                            <td>${user.role}</td>
+                          `;
+          tableBody.appendChild(row);
+        });
+
+        updatePaginationControls();
+      };
+
+      // Update pagination controls based on current page
+      const updatePaginationControls = () => {
+        const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+        document.getElementById(
+          "page-number"
+        ).textContent = `Page ${currentPage}`;
+
+        document.getElementById("prev-page").disabled = currentPage === 1;
+        document.getElementById("next-page").disabled =
+          currentPage === totalPages;
+      };
+
+      // Change page to previous page
+      const goToPreviousPage = () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+        }
+      };
+
+      // Change page to next page
+      const goToNextPage = () => {
+        const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTable();
+        }
+      };
+
+      // Filter users based on the search input
+      const filterTable = () => {
+        const searchInput = document
+          .getElementById("search-input")
+          .value.toLowerCase();
+        filteredUsers = allUsers.filter((user) => {
+          return (
+            user.first_name.toLowerCase().includes(searchInput) ||
+            user.last_name.toLowerCase().includes(searchInput) ||
+            user.mobile_number.toLowerCase().includes(searchInput) ||
+            user.email.toLowerCase().includes(searchInput)
+          );
+        });
+
+        currentPage = 1; // Reset to the first page when the filter is applied
+        renderTable();
+      };
+
+      // Handle changes in the dropdown
+      const handleDropdownChange = () => {
+        const selectedValue = parseInt(
+          document.getElementById("users-per-page-select").value
+        );
+        if (!isNaN(selectedValue)) {
+          usersPerPage = selectedValue;
+          currentPage = 1; // Reset to the first page when the number of users per page changes
+          renderTable();
+        }
+      };
+
+      // Download the current page's user data as PDF
+      const downloadPDF = () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(12);
+
+        // Header
+        doc.text("Users List", 90, 10);
+
+        // Table Headers
+        const headers = [
+          "Sr.no",
+          "First Name",
+          "Last Name",
+          "Email",
+          "Number",
+          "Role",
+        ];
+        let yOffset = 20;
+        headers.forEach((header, index) => {
+          doc.text(header, 14 + index * 30, yOffset);
+        });
+
+        // Table Content (Current Page)
+        const startIndex = (currentPage - 1) * usersPerPage;
+        const endIndex = startIndex + usersPerPage;
+        const usersToDisplay = filteredUsers.slice(startIndex, endIndex);
+
+        usersToDisplay.forEach((user, index) => {
+          yOffset += 10;
+          doc.text(`${index + 1}`, 14, yOffset);
+          doc.text(user.first_name, 40, yOffset);
+          doc.text(user.last_name, 75, yOffset);
+          doc.text(user.email, 100, yOffset);
+          doc.text(user.mobile_number, 120, yOffset);
+          doc.text(user.role, 120, yOffset);
+        });
+
+        doc.save("users_list.pdf");
+      };
+
+      // Attach event listeners
+      document
+        .getElementById("prev-page")
+        .addEventListener("click", goToPreviousPage);
+      document
+        .getElementById("next-page")
+        .addEventListener("click", goToNextPage);
+      document
+        .getElementById("search-input")
+        .addEventListener("input", filterTable);
+      document
+        .getElementById("users-per-page-select")
+        .addEventListener("change", handleDropdownChange);
+      document
+        .getElementById("download-pdf")
+        .addEventListener("click", downloadPDF);
+
+      // Fetch users when the page loads
+      window.onload = getUsers;
+    </script>
+  </body>
+</html>

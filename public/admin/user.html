@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Users</title>
+    <link
+      href="assets/vendor/fontawesome/css/fontawesome.min.css"
+      rel="stylesheet"
+    />
+    <link href="assets/vendor/fontawesome/css/solid.min.css" rel="stylesheet" />
+    <link
+      href="assets/vendor/fontawesome/css/brands.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="assets/vendor/bootstrap/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="assets/vendor/datatables/datatables.min.css" rel="stylesheet" />
+    <link href="assets/css/master.css" rel="stylesheet" />
+
+    <!-- jsPDF Library -->
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+    <!-- xlsx Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <!-- sidebar navigation component -->
+      <nav id="sidebar" class="active">
+        <ul class="list-unstyled components text-secondary">
+          <li>
+            <a href="dashboard.html"><i class="fas fa-home"></i>Dashboard</a>
+          </li>
+          <li>
+            <a href="post.html"><i class="fas fa-file-alt"></i>Posts</a>
+          </li>
+          <li>
+            <a href="tables.html"><i class="fas fa-table"></i>Users</a>
+          </li>
+        </ul>
+      </nav>
+      <!-- end of sidebar component -->
+
+      <div id="body" class="active">
+        <!-- navbar navigation component -->
+        <nav class="navbar navbar-expand-lg navbar-white bg-white">
+          <button type="button" id="sidebarCollapse" class="btn btn-light">
+            <i class="fas fa-bars"></i><span></span>
+          </button>
+        </nav>
+        <!-- end of navbar navigation -->
+
+        <div class="content">
+          <div class="container">
+            <div class="page-title">
+              <h3>
+                Users
+                <!-- Export Dropdown -->
+                <div class="btn-group float-end ms-2">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    Export
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="javascript:void(0);"
+                        id="download-pdf"
+                        ><i class="fa-solid fa-file-pdf"></i> Download PDF</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="javascript:void(0);"
+                        id="download-excel"
+                        ><i class="fa-solid fa-file-excel"></i> Download
+                        Excel</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="javascript:void(0);"
+                        id="download-csv"
+                        ><i class="fa-solid fa-file-csv"></i> Download CSV</a
+                      >
+                    </li>
+                  </ul>
+                </div>
+                <!-- End of Export Dropdown -->
+              </h3>
+            </div>
+
+            <div class="box box-primary">
+              <div class="box-body">
+                <table width="100%" class="table table-hover">
+                  <div class="d-flex align-items-center">
+                    <select
+                      class="form-select"
+                      aria-label="Default select example"
+                      style="width: auto"
+                      id="users-per-page-select"
+                    >
+                      <option selected>Select user to show</option>
+                      <option value="5">5</option>
+                      <option value="10">10</option>
+                      <option value="15">15</option>
+                    </select>
+                    <div class="mb-3 ms-3" style="padding-left: 650px">
+                      <input
+                        type="text"
+                        id="search-input"
+                        class="form-control"
+                        placeholder="Search"
+                      />
+                    </div>
+                  </div>
+                  <thead>
+                    <tr>
+                      <th>Sr.no</th>
+                      <th>First Name</th>
+                      <th>Last Name</th>
+                      <th>Email</th>
+                      <th>Number</th>
+                      <th>Role</th>
+                    </tr>
+                  </thead>
+                  <tbody id="userstablebody">
+                    <!-- User data will be populated here -->
+                  </tbody>
+                </table>
+
+                <!-- Pagination Controls -->
+                <div
+                  id="pagination-controls"
+                  class="d-flex justify-content-center mt-3"
+                >
+                  <button id="prev-page" class="btn btn-primary" disabled>
+                    Prev
+                  </button>
+                  <span id="page-number" class="mx-3"></span>
+                  <button id="next-page" class="btn btn-primary">Next</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/datatables/datatables.min.js"></script>
+    <script src="assets/js/initiate-datatables.js"></script>
+    <script src="assets/js/script.js"></script>
+
+    <script>
+      let currentPage = 1;
+      let usersPerPage = 5;
+      let allUsers = [];
+      let filteredUsers = [];
+
+      // Fetch users from the server
+      const getUsers = async () => {
+        const token = localStorage.getItem("Authortoken");
+        if (!token) {
+          // If no token found, redirect to login
+          window.location.href = "login.html";
+          return;
+        }
+        try {
+          const response = await fetch("/user");
+          const data = await response.json();
+
+          if (data.status === 200) {
+            allUsers = data.users;
+            filteredUsers = allUsers;
+            renderTable(); // Render the table once data is fetched
+          } else {
+            console.error("Failed to load users:", data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching users:", error);
+        }
+      };
+
+      // Render the users for the current page
+      const renderTable = () => {
+        const tableBody = document.getElementById("userstablebody");
+        tableBody.innerHTML = "";
+
+        const startIndex = (currentPage - 1) * usersPerPage;
+        const endIndex = startIndex + usersPerPage;
+        const usersToDisplay = filteredUsers.slice(startIndex, endIndex);
+
+        usersToDisplay.forEach((user, index) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+                              <td>${startIndex + index + 1}</td>
+                              <td>${user.first_name}</td>
+                              <td>${user.last_name}</td>
+                              <td>${user.email}</td>
+                              <td>${user.mobile_number}</td>
+                              <td>${user.role}</td>
+                            `;
+          tableBody.appendChild(row);
+        });
+
+        updatePaginationControls();
+      };
+
+      // Update pagination controls based on current page
+      const updatePaginationControls = () => {
+        const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+        document.getElementById(
+          "page-number"
+        ).textContent = `Page ${currentPage}`;
+
+        document.getElementById("prev-page").disabled = currentPage === 1;
+        document.getElementById("next-page").disabled =
+          currentPage === totalPages;
+      };
+
+      // Change page to previous page
+      const goToPreviousPage = () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+        }
+      };
+
+      // Change page to next page
+      const goToNextPage = () => {
+        const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTable();
+        }
+      };
+
+      // Filter users based on the search input
+      const filterTable = () => {
+        const searchInput = document
+          .getElementById("search-input")
+          .value.toLowerCase();
+        filteredUsers = allUsers.filter((user) => {
+          return (
+            user.first_name.toLowerCase().includes(searchInput) ||
+            user.last_name.toLowerCase().includes(searchInput) ||
+            user.mobile_number.toLowerCase().includes(searchInput) ||
+            user.email.toLowerCase().includes(searchInput)
+          );
+        });
+
+        currentPage = 1; // Reset to the first page when the filter is applied
+        renderTable();
+      };
+
+      // Handle changes in the dropdown
+      const handleDropdownChange = () => {
+        const selectedValue = parseInt(
+          document.getElementById("users-per-page-select").value
+        );
+        if (!isNaN(selectedValue)) {
+          usersPerPage = selectedValue;
+          currentPage = 1; // Reset to the first page when the number of users per page changes
+          renderTable();
+        }
+      };
+
+      // Attach event listeners
+      document
+        .getElementById("prev-page")
+        .addEventListener("click", goToPreviousPage);
+      document
+        .getElementById("next-page")
+        .addEventListener("click", goToNextPage);
+      document
+        .getElementById("search-input")
+        .addEventListener("input", filterTable);
+      document
+        .getElementById("users-per-page-select")
+        .addEventListener("change", handleDropdownChange);
+      // Fetch users when the page loads
+      window.onload = getUsers;
+
+      // PDF Download
+      const downloadPDF = async () => {
+        try {
+          const response = await fetch("/user");
+          const data = await response.json();
+
+          if (data.status === 200) {
+            const users = data.users;
+
+            const { PDFDocument, rgb } = PDFLib;
+            const doc = await PDFDocument.create();
+            const page = doc.addPage([600, 800]);
+            const { width, height } = page.getSize();
+
+            const font = await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+            const fontSize = 12;
+
+            page.drawText("Users List", {
+              x: 250,
+              y: height - 40,
+              size: 18,
+              font: font,
+              color: rgb(0, 0.53, 0.71),
+            });
+
+            const headers = [
+              "Sr.no",
+              "First Name",
+              "Last Name",
+              "Email",
+              "Number",
+              "Role",
+            ];
+            const rows = users.map((user, index) => [
+              index + 1,
+              user.first_name,
+              user.last_name,
+              user.email,
+              user.mobile_number,
+              user.role,
+            ]);
+
+            const tableStartY = height - 70;
+            const rowHeight = 20;
+            const columnWidths = [50, 90, 90, 130, 100, 90]; // Adjusting the width to match the number of columns
+            let yPosition = tableStartY;
+
+            // Function to calculate the x-position for each column
+            const getXPosition = (colIndex) => {
+              return (
+                50 + columnWidths.slice(0, colIndex).reduce((a, b) => a + b, 0)
+              );
+            };
+
+            // Draw table headers with bold font
+            headers.forEach((header, colIndex) => {
+              page.drawText(header, {
+                x: getXPosition(colIndex),
+                y: yPosition,
+                size: fontSize,
+                font: font,
+                color: rgb(0, 0, 0),
+              });
+            });
+
+            yPosition -= rowHeight;
+
+            // Draw table rows
+            rows.forEach((row, rowIndex) => {
+              row.forEach((cell, colIndex) => {
+                // Ensure that all cells are strings (just in case)
+                page.drawText(String(cell), {
+                  x: getXPosition(colIndex),
+                  y: yPosition,
+                  size: fontSize,
+                  font: font,
+                  color: rgb(0, 0, 0),
+                });
+              });
+
+              yPosition -= rowHeight;
+            });
+
+            // Add table borders (optional, if you want to show lines between columns and rows)
+            yPosition = tableStartY;
+            const tableWidth = columnWidths.reduce((a, b) => a + b, 0);
+
+            // Draw vertical borders (columns)
+            let xPosition = 20;
+            columnWidths.forEach((width) => {
+              page.drawLine({
+                start: { x: xPosition, y: tableStartY },
+                end: { x: xPosition, y: yPosition },
+                color: rgb(0, 0, 0),
+                thickness: 1,
+              });
+              xPosition += width;
+            });
+
+            // Draw horizontal borders (rows)
+            yPosition = tableStartY - rowHeight;
+            for (let i = 1; i < rows.length + 1; i++) {
+              page.drawLine({
+                start: { x: 20, y: yPosition },
+                end: { x: 20 + tableWidth, y: yPosition },
+                color: rgb(0, 0, 0),
+                thickness: 1,
+              });
+              yPosition -= rowHeight;
+            }
+
+            const pdfBytes = await doc.save();
+
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(
+              new Blob([pdfBytes], { type: "application/pdf" })
+            );
+            link.download = "users-list.pdf";
+            link.click();
+          } else {
+            console.error("Failed to load users:", data.message);
+          }
+        } catch (error) {
+          console.error("Error generating PDF:", error);
+        }
+      };
+
+      document
+        .getElementById("download-pdf")
+        .addEventListener("click", downloadPDF);
+
+      // Download Excel
+      const downloadExcel = () => {
+        const wb = XLSX.utils.book_new();
+        const ws_data = [];
+        ws_data.push([
+          "Sr.no",
+          "First Name",
+          "Last Name",
+          "Email",
+          "Number",
+          "Role",
+        ]);
+
+        filteredUsers.forEach((user, index) => {
+          ws_data.push([
+            index + 1,
+            user.first_name,
+            user.last_name,
+            user.email,
+            user.mobile_number,
+            user.role,
+          ]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+        XLSX.utils.book_append_sheet(wb, ws, "Users");
+
+        // Download the Excel file
+        XLSX.writeFile(wb, "users_list.xlsx");
+      };
+
+      document
+        .getElementById("download-excel")
+        .addEventListener("click", downloadExcel);
+
+      // CSV download
+      const downloadCSV = () => {
+        const csvHeader = "Sr.no,First Name,Last Name,Email,Number,Role\n";
+        const csvRows = filteredUsers
+          .map((user, index) => {
+            return `${index + 1},${user.first_name},${user.last_name},${
+              user.email
+            },${user.mobile_number},${user.role}`;
+          })
+          .join("\n");
+
+        const csvContent = csvHeader + csvRows;
+
+        // Create a temporary anchor element to trigger download
+        const link = document.createElement("a");
+        link.href =
+          "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
+        link.download = "users.csv";
+        link.click();
+      };
+
+      document
+        .getElementById("download-csv")
+        .addEventListener("click", downloadCSV);
+    </script>
+  </body>
+</html>
