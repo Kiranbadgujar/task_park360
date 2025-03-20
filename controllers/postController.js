@@ -119,11 +119,23 @@ const getPostsByPagination = async (req, res) => {
         'title',
         'content',
         'createdAt',
-        [
-          Sequelize.fn('CONCAT', 'http://localhost:3000/', Sequelize.col('image')),
-          'image',
-        ],
+        [Sequelize.fn('CONCAT', 'http://localhost:3000/', Sequelize.col('image')), 'image'],
+        [Sequelize.fn('COUNT', Sequelize.col('likes.like.id')), 'likeCount'],
+        [Sequelize.fn('COUNT', Sequelize.col('comments.id')), 'commentCount'],
       ],
+      include: [
+        {
+          model: Comment,
+          as: 'comments',
+          attributes: [],
+        },
+        {
+          model: Like,
+          as: 'likes',
+          attributes: [],
+        },
+      ],
+      group: ['Post.id'],
       limit: limit,
       offset: offset,
     });

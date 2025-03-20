@@ -406,3 +406,139 @@
 
   </body>
 </html>
+
+
+<!-- <script>
+  let currentPage = 1;
+  const postsPerPage = 6;  
+
+  // Fetch posts from the API
+  const fetchPosts = async () => {
+    const token = localStorage.getItem("Authortoken");
+    if (!token) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    try {
+      const searchQuery = document.getElementById("search-input").value;
+      const response = await fetch(`/get-post-author?page=${currentPage}&limit=${postsPerPage}&search=${searchQuery}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+
+      if (data.status === 200 && data.posts.length > 0) {
+        renderPosts(data.posts);
+        updatePagination(data.pagination);
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  };
+
+  // Render posts for the current page
+  const renderPosts = (posts) => {
+    const postsContainer = document.getElementById("postsContainer");
+    postsContainer.innerHTML = "";
+
+    posts.forEach((post) => {
+      const postElement = document.createElement("div");
+      postElement.classList.add("col-12", "col-lg-4");
+
+      const formattedDate = new Date(post.createdAt);
+      const day = String(formattedDate.getDate()).padStart(2, "0");
+      const month = String(formattedDate.getMonth() + 1).padStart(2, "0");
+      const year = formattedDate.getFullYear();
+      const formattedDateString = `${day}-${month}-${year}`;
+
+      let mediaElement;
+      const fileExtension = post.image.split(".").pop();
+
+      if (["jpg", "jpeg", "png"].includes(fileExtension)) {
+        mediaElement = `<img class="img-fluid" loading="lazy" src="${post.image}" />`;
+      } else {
+        mediaElement = ` <video class="img-fluid" loading="lazy" controls style="margin-top: 100px; margin-bottom:40px">
+                            <source src="${post.image}" type="video/${fileExtension}">
+                        </video>`;
+      }
+
+      postElement.innerHTML = `
+        <article style="background-color: white;">
+          <div class="card border-0 bg-transparent">
+            <figure class="card-img-top mb-4 overflow-hidden bsb-overlay-hover">
+              <a href="detailpost.html?postId=${post.id}">
+                ${mediaElement}
+              </a>
+            </figure>
+            <div class="card-body m-0 p-2">
+              <div class="entry-header mb-3">
+                <h2 class="card-title entry-title h4 m-0">
+                  <a class="link-dark text-decoration-none" href="#!">${post.title}</a>
+                </h2>
+              </div>
+            </div>
+            <div class="card-footer border-0 bg-transparent p-2 m-0">
+              <ul class="entry-meta list-unstyled d-flex align-items-center m-0">
+                <li>
+                  <a class="fs-7 link-secondary text-decoration-none d-flex align-items-center" href="">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-calendar3" viewBox="0 0 16 16">
+                      <path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z" />
+                      <path d="M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                    </svg>
+                    <span class="ms-2 fs-7">${formattedDateString}</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="link-secondary text-decoration-none d-flex align-items-center px-2" href="${post.id}" id="showLikesModal" data-bs-toggle="modal" data-bs-target="#likeModal"  onclick="likeFunction(${post.id})">
+                    <img src="assets/img/icons8-like-50.png"  width="14" height="14" />
+                    <span class="ms-2 fs-7" id="likeCount">${post.likeCount} Likes</span>
+                  </a>
+                </li>
+
+                <li>
+                  <a class="link-secondary text-decoration-none d-flex align-items-center px-2" href="${post.id}" id="showLikesModal" data-bs-toggle="modal" data-bs-target="#commentModal"  onclick="commentFunction(${post.id})">
+                  <img src="assets/img/comment-3-svgrepo-com.png"  width="14" height="14" />
+                  <span class="ms-2 fs-7">${post.commentCount} Comments</span>
+                  </a>
+                </li>
+
+              </ul>
+            </div>
+          </div>
+        </article>
+      `;
+
+      postsContainer.appendChild(postElement);
+    });
+  };
+
+  // Update pagination buttons
+  const updatePagination = (pagination) => {
+    document.getElementById("pageNumber").textContent = `Page ${pagination.page}`;
+    document.getElementById("prevPage").disabled = pagination.page === 1;
+    document.getElementById("nextPage").disabled = pagination.page * postsPerPage >= pagination.totalPosts;
+  };
+
+  // Handle page change
+  const changePage = (direction) => {
+    if (direction === -1 && currentPage > 1) {
+      currentPage--;
+    } else if (direction === 1) {
+      currentPage++;
+    }
+    fetchPosts();
+  };
+
+  // Search posts dynamically
+  const searchPosts = () => {
+    currentPage = 1; // Reset to the first page on search
+    fetchPosts();
+  };
+
+  // Fetch posts when the page loads
+  window.onload = fetchPosts;
+</script> -->

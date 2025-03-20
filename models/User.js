@@ -31,7 +31,11 @@ const User = sequelize.define('User', {
   role: {
     type: DataTypes.STRING,
     allowNull: false,
-  }
+  },
+  isFirstLogin: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+  },
 });
 
 module.exports = User;

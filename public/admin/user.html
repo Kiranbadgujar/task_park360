@@ -172,22 +172,28 @@
       let currentPage = 1;
       let usersPerPage = 5;
       let allUsers = [];
+      let totalUsers = 0;
       let filteredUsers = [];
 
-      // Fetch users from the server
+      // Fetch users from the server with pagination and search
       const getUsers = async () => {
+        const searchTerm = document.getElementById("search-input").value;
         const token = localStorage.getItem("Authortoken");
         if (!token) {
           // If no token found, redirect to login
           window.location.href = "login.html";
           return;
         }
+
         try {
-          const response = await fetch("/user");
+          const response = await fetch(
+            `/user?search=${searchTerm}&page=${currentPage}&limit=${usersPerPage}`
+          );
           const data = await response.json();
 
           if (data.status === 200) {
             allUsers = data.users;
+            totalUsers = data.pagination.totalUsers;
             filteredUsers = allUsers;
             renderTable(); // Render the table once data is fetched
           } else {
@@ -203,14 +209,12 @@
         const tableBody = document.getElementById("userstablebody");
         tableBody.innerHTML = "";
 
-        const startIndex = (currentPage - 1) * usersPerPage;
-        const endIndex = startIndex + usersPerPage;
-        const usersToDisplay = filteredUsers.slice(startIndex, endIndex);
-
-        usersToDisplay.forEach((user, index) => {
+        allUsers.forEach((user, index) => {
           const row = document.createElement("tr");
           row.innerHTML = `
-                              <td>${startIndex + index + 1}</td>
+                              <td>${
+                                (currentPage - 1) * usersPerPage + index + 1
+                              }</td>
                               <td>${user.first_name}</td>
                               <td>${user.last_name}</td>
                               <td>${user.email}</td>
@@ -225,7 +229,7 @@
 
       // Update pagination controls based on current page
       const updatePaginationControls = () => {
-        const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+        const totalPages = Math.ceil(totalUsers / usersPerPage);
         document.getElementById(
           "page-number"
         ).textContent = `Page ${currentPage}`;
@@ -239,35 +243,23 @@
       const goToPreviousPage = () => {
         if (currentPage > 1) {
           currentPage--;
-          renderTable();
+          getUsers();
         }
       };
 
       // Change page to next page
       const goToNextPage = () => {
-        const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+        const totalPages = Math.ceil(totalUsers / usersPerPage);
         if (currentPage < totalPages) {
           currentPage++;
-          renderTable();
+          getUsers();
         }
       };
 
       // Filter users based on the search input
       const filterTable = () => {
-        const searchInput = document
-          .getElementById("search-input")
-          .value.toLowerCase();
-        filteredUsers = allUsers.filter((user) => {
-          return (
-            user.first_name.toLowerCase().includes(searchInput) ||
-            user.last_name.toLowerCase().includes(searchInput) ||
-            user.mobile_number.toLowerCase().includes(searchInput) ||
-            user.email.toLowerCase().includes(searchInput)
-          );
-        });
-
         currentPage = 1; // Reset to the first page when the filter is applied
-        renderTable();
+        getUsers();
       };
 
       // Handle changes in the dropdown
@@ -278,7 +270,7 @@
         if (!isNaN(selectedValue)) {
           usersPerPage = selectedValue;
           currentPage = 1; // Reset to the first page when the number of users per page changes
-          renderTable();
+          getUsers();
         }
       };
 
@@ -295,13 +287,17 @@
       document
         .getElementById("users-per-page-select")
         .addEventListener("change", handleDropdownChange);
+
       // Fetch users when the page loads
       window.onload = getUsers;
 
       // PDF Download
       const downloadPDF = async () => {
         try {
-          const response = await fetch("/user");
+          const searchTerm = document.getElementById("search-input").value;
+          const response = await fetch(
+            `/user?search=${searchTerm}&page=${currentPage}&limit=${usersPerPage}`
+          );
           const data = await response.json();
 
           if (data.status === 200) {
@@ -320,7 +316,7 @@
               y: height - 40,
               size: 18,
               font: font,
-              color: rgb(0, 0.53, 0.71),
+              color: rgb(0, 0.53, 0.71), // A soft blue color
             });
 
             const headers = [
@@ -341,8 +337,8 @@
             ]);
 
             const tableStartY = height - 70;
-            const rowHeight = 20;
-            const columnWidths = [50, 90, 90, 130, 100, 90]; // Adjusting the width to match the number of columns
+            const rowHeight = 25;
+            const columnWidths = [50, 90, 90, 130, 100, 90]; // Adjusted width
             let yPosition = tableStartY;
 
             // Function to calculate the x-position for each column
@@ -352,62 +348,60 @@
               );
             };
 
-            // Draw table headers with bold font
+            // Header Row (with background color)
+            const headerBgColor = rgb(0, 0.53, 0.71); // Blue background
+            const headerTextColor = rgb(0, 0, 0); // Black text
+
+            // Draw header with background color
+            page.drawRectangle({
+              x: 16,
+              y: yPosition - rowHeight + 20,
+              width: columnWidths.reduce((a, b) => a + b, 0),
+              height: rowHeight - 1,
+              color: headerBgColor,
+            });
+
             headers.forEach((header, colIndex) => {
               page.drawText(header, {
                 x: getXPosition(colIndex),
                 y: yPosition,
                 size: fontSize,
                 font: font,
-                color: rgb(0, 0, 0),
+                color: headerTextColor,
               });
             });
 
             yPosition -= rowHeight;
 
-            // Draw table rows
+            // Row Styling (alternating row colors)
+            const rowBgColor1 = rgb(0.9, 0.9, 0.9); // Light gray background for odd rows
+            const rowBgColor2 = rgb(1, 1, 1); // White background for even rows
+
             rows.forEach((row, rowIndex) => {
+              const rowBgColor = rowIndex % 2 === 0 ? rowBgColor1 : rowBgColor2;
+
+              // Draw row background color
+              page.drawRectangle({
+                x: 16,
+                y: yPosition - rowHeight + 26,
+                width: columnWidths.reduce((a, b) => a + b, 0),
+                height: rowHeight - 3 ,
+                color: rowBgColor,
+              });
+
               row.forEach((cell, colIndex) => {
-                // Ensure that all cells are strings (just in case)
+                // Draw the text for each cell
                 page.drawText(String(cell), {
                   x: getXPosition(colIndex),
                   y: yPosition,
                   size: fontSize,
                   font: font,
-                  color: rgb(0, 0, 0),
+                  color: rgb(0, 0, 0), // Black text color
                 });
               });
 
               yPosition -= rowHeight;
             });
-
-            // Add table borders (optional, if you want to show lines between columns and rows)
-            yPosition = tableStartY;
-            const tableWidth = columnWidths.reduce((a, b) => a + b, 0);
-
-            // Draw vertical borders (columns)
-            let xPosition = 20;
-            columnWidths.forEach((width) => {
-              page.drawLine({
-                start: { x: xPosition, y: tableStartY },
-                end: { x: xPosition, y: yPosition },
-                color: rgb(0, 0, 0),
-                thickness: 1,
-              });
-              xPosition += width;
-            });
-
-            // Draw horizontal borders (rows)
-            yPosition = tableStartY - rowHeight;
-            for (let i = 1; i < rows.length + 1; i++) {
-              page.drawLine({
-                start: { x: 20, y: yPosition },
-                end: { x: 20 + tableWidth, y: yPosition },
-                color: rgb(0, 0, 0),
-                thickness: 1,
-              });
-              yPosition -= rowHeight;
-            }
 
             const pdfBytes = await doc.save();
 
@@ -491,3 +485,4 @@
     </script>
   </body>
 </html>
+from above code use puppeterpdf download

@@ -2,12 +2,12 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const User = require("../models/User");
+const Sequelize = require("sequelize");
 const { QueryTypes } = require("sequelize");
-const { PDFDocument } = require("pdf-lib");
-const json2xls = require('json2xls');
-const fs = require("fs")
-const path =require("path")
-const { sendMail, sendForgotMail} = require("../middlewares/sendMail")
+const json2xls = require("json2xls");
+const fs = require("fs");
+const path = require("path");
+const {sendMail,sendForgotMail,sendAdminEmail} = require("../middlewares/sendMail");
 
 // Express-validator
 const validation = (req, res) => {
@@ -24,11 +24,26 @@ const registerUser = async (req, res) => {
     return validationError;
   }
 
-  const { first_name, last_name, email, password, role, mobile_number } =
-    req.body;
+  const {
+    first_name,
+    last_name,
+    email,
+    password,
+    confirm_password,
+    role,
+    mobile_number,
+  } = req.body;
 
   try {
     const existingUser = await User.findOne({ where: { email } });
+
+    if (password !== confirm_password) {
+      return res.status(400).json({
+        status: "error",
+        message: "Password and confirm password must be the same",
+        code: 400,
+      });
+    }
 
     if (existingUser) {
       return res
@@ -37,27 +52,40 @@ const registerUser = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const otp = Math.floor(Math.random()*100000);
+    const otp = Math.floor(Math.random() * 100000);
     const activationToken = jwt.sign(
       {
-        first_name,last_name,email,password:hashedPassword,role,mobile_number,otp
+        first_name,
+        last_name,
+        email,
+        password: hashedPassword,
+        role,
+        mobile_number,
+        otp,
       },
       process.env.Activation_Secret,
       {
-        expiresIn : "1m"
+        expiresIn: "5m",
       }
     );
 
     const data = {
       first_name,
-      otp
+      last_name,
+      email,
+      mobile_number,
+      otp,
     };
 
-    await sendMail(email,"Blog-system",data)
+    await sendMail(email, "Blog-system", data);
 
-    return res.status(201).json({ status: 201, message: "OTP Sent To Your Mail",activationToken});
+    return res
+      .status(201)
+      .json({ status: 201, message: "OTP Sent To Your Mail", activationToken });
   } catch (err) {
-    return res.status(500).json({ status: 500, message: "Error registering user", err });
+    return res
+      .status(500)
+      .json({ status: 500, message: "Error registering user", err });
   }
 };
 
@@ -65,8 +93,6 @@ const registerUser = async (req, res) => {
 const VerifyUser = async (req, res) => {
   try {
     const { otp, activation } = req.body;
-    // console.log(otp);
-    // console.log(activation)
 
     if (!activation) {
       return res.status(400).json({
@@ -75,7 +101,6 @@ const VerifyUser = async (req, res) => {
     }
 
     const verify = jwt.verify(activation, process.env.Activation_Secret);
-    // console.log(verify);
 
     if (!verify) {
       return res.status(400).json({
@@ -90,14 +115,18 @@ const VerifyUser = async (req, res) => {
       });
     }
 
+    // Create user after successful verification
     await User.create({
       first_name: verify.first_name,
       last_name: verify.last_name,
       email: verify.email,
       password: verify.password,
       mobile_number: verify.mobile_number,
-      role:verify.role
+      role: verify.role,
     });
+
+    // Send registration details to admin
+    await sendAdminEmail(verify, verify.email);
 
     return res.status(200).json({
       message: "OTP Verified Successfully",
@@ -130,6 +159,23 @@ const loginUser = async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({ status: 400, message: "Invalid password" });
+    }
+
+    if (user.isFirstLogin === true) {
+      user.isFirstLogin = false;
+      await user.save();
+      const payload = {
+        user_id: user.id,
+        email: user.email,
+      };
+
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      return res
+        .status(200)
+        .json({ status: 200, message: "Welcome to the blog system!", token });
     }
 
     const payload = {
@@ -165,7 +211,7 @@ const forgetPassword = async (req, res) => {
 
     const otp = Math.floor(Math.random() * 100000);
     const activationToken = jwt.sign(
-      { otp , email },
+      { otp, email },
       process.env.Activation_Secret,
       { expiresIn: "55m" }
     );
@@ -173,7 +219,7 @@ const forgetPassword = async (req, res) => {
     // Sending OTP mail
     const data = {
       email: user.email,
-      otp
+      otp,
     };
 
     await sendForgotMail("Password Reset OTP", data);
@@ -181,32 +227,34 @@ const forgetPassword = async (req, res) => {
     return res.status(201).json({
       status: 201,
       message: "OTP Sent To Your Mail",
-      activationToken
+      activationToken,
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ status: 500, message: "Error processing request", err });
+    return res
+      .status(500)
+      .json({ status: 500, message: "Error processing request", err });
   }
 };
 
 // reset password
 const resetPassword = async (req, res) => {
   const { otp, password, activation } = req.body;
-  console.log(otp,password,activation);
+  console.log(otp, password, activation);
 
   try {
     // Verify the activation token (OTP)
     const decoded = jwt.verify(activation, process.env.Activation_Secret);
-    const emailcheck =  decoded.email 
-    console.log(emailcheck)
+    const emailcheck = decoded.email;
+    console.log(emailcheck);
     if (String(decoded.otp) !== String(otp)) {
-      return res.status(400).json({ status: 400, message: 'Invalid OTP' });
+      return res.status(400).json({ status: 400, message: "Invalid OTP" });
     }
 
     // Find the user (You might want to store the user ID in the token if needed)
     const user = await User.findOne({ where: { email: decoded.email } });
     if (!user) {
-      return res.status(400).json({ status: 400, message: 'User not found' });
+      return res.status(400).json({ status: 400, message: "User not found" });
     }
 
     // Hash the new password before storing it
@@ -217,30 +265,61 @@ const resetPassword = async (req, res) => {
 
     return res.status(200).json({
       status: 200,
-      message: 'Password successfully reset',
+      message: "Password successfully reset",
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ status: 500, message: 'Error resetting password', err });
+    return res
+      .status(500)
+      .json({ status: 500, message: "Error resetting password", err });
   }
 };
 
 // Get All User
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.sequelize.query(
-      'SELECT * FROM users WHERE role = "user"',
-      {
-        type: QueryTypes.SELECT,
-      }
-    );
+    const searchTerm = req.query.search;
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+
+    const offset = (page - 1) * limit;
+
+    const searchCondition = {
+      [Sequelize.Op.or]: [
+        { first_name: { [Sequelize.Op.like]: `%${searchTerm}%` } },
+        { last_name: { [Sequelize.Op.like]: `%${searchTerm}%` } },
+        { email: { [Sequelize.Op.like]: `%${searchTerm}%` } },
+        { mobile_number: { [Sequelize.Op.like]: `%${searchTerm}%` } },
+      ],
+    };
+
+    const totalUsers = await User.count({
+      where: searchCondition,
+    });
+
+    const users = await User.findAll({
+      where: {role:'user',...searchCondition},
+      limit: limit,
+      offset: offset,
+    });
+
     const countuser = users.length;
-    res.status(200).json({ status: 200, countuser, users });
+
+    res.status(200).json({
+      status: 200,
+      countuser,
+      users,
+      pagination: {
+        page,
+        limit,
+        totalUsers,
+      },
+    });
   } catch (error) {
     res.status(500).json({ status: 500, message: error.message });
   }
 };
-
+ 
 // Get User By ID
 const getUserById = async (req, res) => {
   const userId = req.user.user_id;
@@ -279,7 +358,7 @@ const updateUser = async (req, res) => {
     if (last_name) user.last_name = last_name;
     if (email) user.email = email;
     if (mobile_number) user.mobile_number = mobile_number;
-    
+
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
       user.password = hashedPassword;
@@ -287,10 +366,14 @@ const updateUser = async (req, res) => {
 
     await user.save();
 
-    return res.status(200).json({ status: 200, message: "User updated successfully" });
+    return res
+      .status(200)
+      .json({ status: 200, message: "User updated successfully" });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Error updating user", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Error updating user", error: err.message });
   }
 };
 
@@ -309,12 +392,19 @@ const updatePassword = async (req, res) => {
     // Check if currentPassword matches the existing password
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ status: 400, message: "Current password is incorrect" });
+      return res
+        .status(400)
+        .json({ status: 400, message: "Current password is incorrect" });
     }
 
     // Check if the new password is the same as the current one
     if (password === currentPassword) {
-      return res.status(400).json({ status: 400, message: "New password cannot be the same as the current password" });
+      return res
+        .status(400)
+        .json({
+          status: 400,
+          message: "New password cannot be the same as the current password",
+        });
     }
 
     // Hash the new password and update it
@@ -323,10 +413,14 @@ const updatePassword = async (req, res) => {
 
     await user.save();
 
-    return res.status(200).json({ status: 200, message: "Password updated successfully" });
+    return res
+      .status(200)
+      .json({ status: 200, message: "Password updated successfully" });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Error updating password", error: err.message });
+    return res
+      .status(500)
+      .json({ message: "Error updating password", error: err.message });
   }
 };
 
@@ -344,83 +438,76 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// pdf
+// Route to generate PDF
 const downloadPdf = async (req, res) => {
-  try {
-    const userResponse = await getAllUsers(req, res);
+  const { search, page, limit } = req.query;  // Collecting query parameters from the frontend
 
-    const users = userResponse.data.users;
+  // Launch Puppeteer
+  const browser = await puppeteer.launch();
+  const pageInstance = await browser.newPage();
 
-    const doc = await PDFDocument.create();
-    const page = doc.addPage([600, 800]);
-    const { width, height } = page.getSize();
-    const font = await doc.embedFont(PDFDocument.StandardFonts.Helvetica);
-    const fontSize = 12;
+  // Define the content of the page (you can adjust this for a more dynamic page)
+  await pageInstance.setContent(`
+    <html>
+      <head>
+        <title>Users</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          table, th, td {
+            border: 1px solid black;
+          }
+          th, td {
+            padding: 8px;
+            text-align: left;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Users</h1>
+        <table>
+          <thead>
+            <tr>
+              <th>Sr.no</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Email</th>
+              <th>Number</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Add users dynamically here -->
+            <tr>
+              <td>1</td>
+              <td>John</td>
+              <td>Doe</td>
+              <td>john@example.com</td>
+              <td>123456789</td>
+              <td>Admin</td>
+            </tr>
+            <!-- Add more rows as needed -->
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `);
 
-    page.drawText("Users List", {
-      x: 20,
-      y: height - 40,
-      size: 18,
-      font: font,
-    });
+  // Generate the PDF
+  const pdfBuffer = await pageInstance.pdf();
 
-    const headers = [
-      "Sr.no",
-      "First Name",
-      "Last Name",
-      "Email",
-      "Number",
-      "Role",
-    ];
+  // Close the browser instance
+  await browser.close();
 
-    const rows = users.map((user, index) => [
-      index + 1,
-      user.first_name,
-      user.last_name,
-      user.email,
-      user.mobile_number,
-      user.role,
-    ]);
-
-    const tableStartY = height - 70;
-    const rowHeight = 20;
-    const columnWidths = [40, 100, 100, 150, 100, 100];
-    let yPosition = tableStartY;
-
-    headers.forEach((header, colIndex) => {
-      page.drawText(header, {
-        x: 20 + columnWidths.slice(0, colIndex).reduce((a, b) => a + b, 0),
-        y: yPosition,
-        size: fontSize,
-        font: font,
-      });
-    });
-
-    rows.forEach((row, rowIndex) => {
-      yPosition -= rowHeight;
-      row.forEach((cell, colIndex) => {
-        page.drawText(String(cell), {
-          x: 20 + columnWidths.slice(0, colIndex).reduce((a, b) => a + b, 0),
-          y: yPosition,
-          size: fontSize,
-          font: font,
-        });
-      });
-    });
-
-    const pdfBytes = await doc.save();
-
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      'attachment; filename="users-list.pdf"'
-    );
-
-    res.send(pdfBytes);
-  } catch (error) {
-    console.error("Error generating PDF:", error);
-    res.status(500).send("Error generating PDF");
-  }
+  // Send the PDF as a response
+  res.contentType('application/pdf');
+  res.send(pdfBuffer);
 };
 
 //excel
@@ -438,14 +525,17 @@ const downloadXls = async (req, res) => {
     const xls = json2xls(users);
 
     // Path to save the file temporarily
-    const filePath = './exported.xlsx';
+    const filePath = "./exported.xlsx";
 
     // Save the generated XLS file
-    fs.writeFileSync(filePath, xls, 'binary');
+    fs.writeFileSync(filePath, xls, "binary");
 
     // Set the response headers for downloading the file
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename=exported.xlsx');
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", "attachment; filename=exported.xlsx");
 
     // Send the file as a response
     res.status(200).sendFile(filePath, (err) => {
@@ -457,7 +547,6 @@ const downloadXls = async (req, res) => {
       // Optional: Delete the file after it's been sent (if it's no longer needed)
       fs.unlinkSync(filePath);
     });
-
   } catch (error) {
     console.error("Error generating XLS:", error);
     res.status(500).send("Error generating XLS");
@@ -476,5 +565,5 @@ module.exports = {
   VerifyUser,
   forgetPassword,
   resetPassword,
-  updatePassword
+  updatePassword,
 };

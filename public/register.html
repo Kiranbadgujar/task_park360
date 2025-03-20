@@ -71,6 +71,17 @@
                 />
               </div>
 
+              <div class="mb-3 text-start">
+                <label for="password" class="form-label">Confirm Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="confirm_password"
+                  placeholder="Enter your confirm password"
+                  required
+                />
+              </div>
+
               <!-- Role Selection -->
               <div class="mb-3 text-start">
                 <label class="form-label">Role</label><br />
@@ -121,6 +132,7 @@
         const lastName = document.getElementById("last-name").value;
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
+        const confirm_password = document.getElementById("confirm_password").value;
         const mobile = document.getElementById("mobile").value;
         const role = document.querySelector('input[name="role"]:checked')?.value; 
 
@@ -136,6 +148,7 @@
           email: email,
           mobile_number: mobile,
           password: password,
+          confirm_password: confirm_password,
           role: role, 
         };
 

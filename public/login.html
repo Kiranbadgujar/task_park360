@@ -64,7 +64,7 @@
                 const data = await response.json();
 
                 if (response.status === 200) {
-                    alert('Login successful');
+                    alert(data.message);
                     localStorage.setItem('usertoken', data.token);
                     localStorage.setItem("loggedIn", "true");
                     window.location.href = "index.html"; 
